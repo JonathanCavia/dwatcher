@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Expo
+.expo/
+*.tsbuildinfo
+
+# Build outputs
+dist/
+build/
+
+# Environment files
+.env.local
+.env.*.local
+
+# But NOT .env.example
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Native build artifacts
+android/app/build/
+android/.gradle/
+ios/Pods/
+ios/.xcode.env.local
+
+# EAS Build
+eas-build-*
+
+# Turbo
+.turbo/
+
+# Editor directories
+.vscode/
+.idea/
+
+# Coverage
+coverage/
+
+# Misc
+*.swp
+*.swo
+*~

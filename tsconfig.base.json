@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "skipLibCheck": true,
+    "noEmit": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "paths": {
+      "@dwatcher/config": ["./packages/config/src"],
+      "@dwatcher/types": ["./packages/types/src"],
+      "@dwatcher/audio": ["./packages/audio/src"],
+      "@dwatcher/ml": ["./packages/ml/src"]
+    }
+  },
+  "exclude": ["node_modules", "dist", "build"]
+}
