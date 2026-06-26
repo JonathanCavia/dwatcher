@@ -15,9 +15,9 @@ Use **host `pnpm` from the repo root** for the whole monorepo. The root `Makefil
 make install
 
 # Add to a specific workspace
-pnpm --filter @dwatcher/webapp add react-hook-form
-pnpm --filter @dwatcher/api add axios
-pnpm --filter @dwatcher/mobileapp add -D @types/react
+pnpm --filter @dwatcher/config add zod
+pnpm --filter @dwatcher/ml add -D vitest
+pnpm --filter @dwatcher/mobile add expo-router
 
 # Add tooling to the root (eslint, typescript, etc.)
 pnpm add -D eslint -w
@@ -26,10 +26,10 @@ pnpm add -D eslint -w
 For Expo-managed mobile packages, prefer Expo's installer on the host:
 
 ```bash
-cd apps/mobileapp && npx expo install <package>
+cd apps/mobile && npx expo install <package>
 ```
 
-After dependency changes, run `make install` from the repo root so `pnpm-lock.yaml` matches; restart the web dev server if it is running by stopping `make start` with `Ctrl+C` and running it again, or use `make restart` / `make refresh`.
+After dependency changes, run `make install` from the repo root so `pnpm-lock.yaml` matches.
 
 ### Common host commands
 
@@ -38,8 +38,9 @@ pnpm -r lint                          # lint all workspaces
 pnpm -r format                        # check formatting in all workspaces
 pnpm -r typecheck                     # type-check all workspaces
 pnpm -r test                          # run workspace tests
-pnpm --filter @dwatcher/webapp build   # one-off Next.js production build
-pnpm --filter @dwatcher/mobileapp start # Expo dev server from repo root
+pnpm --filter @dwatcher/config build   # build config package
+pnpm --filter @dwatcher/audio test     # run audio tests
+pnpm --filter @dwatcher/mobile start  # Expo dev server from repo root
 ```
 
 The root `Makefile` wraps the common host commands (`make install`, `make start`, `make restart`, `make refresh`, `make clean`, `make lint`, `make typecheck`, `make test`, etc.).
@@ -57,7 +58,7 @@ Note: `@dwatcher/types` requires no build — it ships source directly.
 
 ```ts
 // ❌ Avoid in a reusable package
-const url = process.env.NEXT_PUBLIC_API_URL
+const url = process.env.NEXT_PUBLIC_API_URL;
 
 // ✅ Prefer configuration passed in
 export function createApiClient(config: { baseUrl: string }) {

@@ -8,16 +8,16 @@ This is a **pnpm monorepo** located at `/Users/jon4/Desktop/hwatcher` with 2 app
 
 ## Quick Reference Commands
 
-| Command | Purpose |
-|---------|---------|
-| `pnpm install` | Install all workspace dependencies |
-| `pnpm -r typecheck` | Type-check all workspaces |
-| `pnpm -r lint` | Lint all workspaces |
-| `pnpm -r test` | Run tests in all workspaces |
-| `pnpm -r build` | Build all workspaces with a build step |
-| `pnpm --filter @dwatcher/mobile start` | Start Expo dev server |
+| Command                                  | Purpose                                     |
+| ---------------------------------------- | ------------------------------------------- |
+| `pnpm install`                           | Install all workspace dependencies          |
+| `pnpm -r typecheck`                      | Type-check all workspaces                   |
+| `pnpm -r lint`                           | Lint all workspaces                         |
+| `pnpm -r test`                           | Run tests in all workspaces                 |
+| `pnpm -r build`                          | Build all workspaces with a build step      |
+| `pnpm --filter @dwatcher/mobile start`   | Start Expo dev server                       |
 | `cd apps/mobile && npx expo run:android` | Build and launch on Android device/emulator |
-| `pnpm --filter @dwatcher/backend dev` | Start backend dev server |
+| `pnpm --filter @dwatcher/backend dev`    | Start backend dev server                    |
 
 Makefile wrappers also available: `make install`, `make lint`, `make typecheck`, `make test`, `make build`, `make clean`.
 
@@ -41,10 +41,10 @@ See `docs/ARCHITECTURE.md` for the full system architecture.
 
 The following `.claude/rules/*.md` files apply to specific paths in the repo:
 
-| Path | Applies |
-|------|---------|
-| `apps/mobile/**` | `mobile.md` |
-| `packages/types/**` | `typescript.md` |
+| Path                         | Applies                          |
+| ---------------------------- | -------------------------------- |
+| `apps/mobile/**`             | `mobile.md`                      |
+| `packages/types/**`          | `typescript.md`                  |
 | `packages/*/**`, `apps/*/**` | `dependencies.md`, `monorepo.md` |
 
 ## Key Technical Decisions
@@ -58,14 +58,14 @@ The following `.claude/rules/*.md` files apply to specific paths in the repo:
 
 ## Documentation Index
 
-| File | Content |
-|------|---------|
-| `docs/ARCHITECTURE.md` | Full system architecture, package responsibilities, data flow |
-| `docs/GENERAL-GUIDELINES.md` | Development conventions, command reference, coding standards |
-| `docs/SETUP-REFERENCE.md` | Prerequisites, environment setup, build instructions |
-| `docs/TECH-STACK.md` | Technology decisions with rationale and trade-offs |
-| `docs/ROADMAP.md` | Development milestones and planned features |
-| `docs/ML-PIPELINE.md` | ML model details, training pipeline, and dataset info |
+| File                         | Content                                                       |
+| ---------------------------- | ------------------------------------------------------------- |
+| `docs/ARCHITECTURE.md`       | Full system architecture, package responsibilities, data flow |
+| `docs/GENERAL-GUIDELINES.md` | Development conventions, command reference, coding standards  |
+| `docs/SETUP-REFERENCE.md`    | Prerequisites, environment setup, build instructions          |
+| `docs/TECH-STACK.md`         | Technology decisions with rationale and trade-offs            |
+| `docs/ROADMAP.md`            | Development milestones and planned features                   |
+| `docs/ML-PIPELINE.md`        | ML model details, training pipeline, and dataset info         |
 
 ## Workflow
 

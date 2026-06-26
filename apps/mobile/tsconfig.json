@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "strict": true,
+    "paths": {
+      "@dwatcher/config": ["../../packages/config/src"],
+      "@dwatcher/types": ["../../packages/types/src"],
+      "@dwatcher/audio": ["../../packages/audio/src"],
+      "@dwatcher/ml": ["../../packages/ml/src"]
+    }
+  },
+  "include": ["app", "src"]
+}

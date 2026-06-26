@@ -1,0 +1,19 @@
+{
+  "name": "@dwatcher/audio",
+  "version": "0.1.0",
+  "private": true,
+  "description": "PCM, volume, mel-spectrogram, and WAV utilities for dwatcher",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint src/ tests/",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.9"
+  }
+}

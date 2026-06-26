@@ -1,0 +1,93 @@
+version: '3.8'
+
+# ─────────────────────────────────────────────────────────────
+# dwatcher — Development Docker Compose
+#
+# Services:
+#   backend       — Node.js backend (REST + WebSocket signaling)
+#   postgres      — PostgreSQL for session/event storage
+#   pgadmin       — PostgreSQL admin UI (optional, port 5050)
+#   coturn        — TURN/STUN server for WebRTC NAT traversal
+#
+# Expo (mobile app) runs on the HOST, not in Docker.
+# See docs/SETUP-REFERENCE.md for Android emulator setup.
+# ─────────────────────────────────────────────────────────────
+
+services:
+  # ── Backend (Node.js Fastify) ─────────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    container_name: dwatcher-backend
+    ports:
+      - '${BACKEND_PORT:-3000}:3000'
+      - '${SIGNALING_PORT:-3001}:3001'
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://${POSTGRES_USER:-dwatcher}:${POSTGRES_PASSWORD:-dwatcher}@postgres:5432/${POSTGRES_DB:-dwatcher}
+      SIGNALING_PORT: 3001
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-production}
+      TURN_SECRET: ${TURN_SECRET:-dev-turn-secret}
+    volumes:
+      - ./apps/backend/src:/app/apps/backend/src:ro
+      - ./packages:/app/packages:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── PostgreSQL ────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: dwatcher-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-dwatcher}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dwatcher}
+      POSTGRES_DB: ${POSTGRES_DB:-dwatcher}
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U dwatcher -d dwatcher']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # ── pgAdmin (optional, for DB inspection) ─────────────────
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: dwatcher-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@dwatcher.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+    ports:
+      - '${PGADMIN_PORT:-5050}:80'
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    profiles:
+      - tools
+
+  # ── Coturn (TURN/STUN for WebRTC) ─────────────────────────
+  coturn:
+    image: coturn/coturn:latest
+    container_name: dwatcher-coturn
+    environment:
+      TURN_SERVER_NAME: coturn
+      TURN_PORT: 3478
+    ports:
+      - '${TURN_PORT:-3478}:3478'
+      - '${TURN_PORT:-3478}:3478/udp'
+      - '49152-65535:49152-65535/udp'
+    restart: unless-stopped
+    profiles:
+      - webrtc
+
+volumes:
+  postgres_data:
+  pgadmin_data:

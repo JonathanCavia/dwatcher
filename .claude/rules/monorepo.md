@@ -3,44 +3,25 @@
 ### Workspace layout
 
 ```
-dwatcher-frontend/
+dwatcher/
 ├── packages/
-│   ├── copy/      → @dwatcher/copy
-│   ├── types/     → @dwatcher/types
-│   ├── hooks/     → @dwatcher/hooks
-│   ├── utils/     → @dwatcher/utils
-│   ├── api/       → @dwatcher/api
-│   └── theme/     → @dwatcher/theme
+│   ├── config/     → @dwatcher/config  — Zod schemas for runtime env/config validation
+│   ├── types/      → @dwatcher/types   — Shared TypeScript types and enums (no build)
+│   ├── audio/      → @dwatcher/audio   — PCM, volume, mel-spectrogram, WAV utilities
+│   └── ml/         → @dwatcher/ml      — TFLite inference pipeline (bark/behavior detection)
 └── apps/
-    ├── webapp/    → @dwatcher/webapp   (Next.js, App Router)
-    └── mobileapp/ → @dwatcher/mobileapp (React Native + Expo)
+    ├── mobile/     → @dwatcher/mobile  — Expo dev-client Android app (Expo Router)
+    └── backend/    → @dwatcher/backend  — Node.js backend (REST + WebSocket signaling)
 ```
 
 ### Package responsibilities
 
-- `@dwatcher/copy` — shared labels, text content, and copy-only data. No UI components.
-- `@dwatcher/types` — shared TypeScript types and interfaces only. No runtime logic. No executable code.
-- `@dwatcher/hooks` — React hooks, Zustand stores, and small shared client patterns used by apps.
-- `@dwatcher/utils` — pure utility functions and small platform-neutral view-model shaping.
-- `@dwatcher/api` — API client and TanStack Query hooks for backend calls.
-- `@dwatcher/theme` — shared design tokens, CSS variables, and Tailwind bridge.
+- `@dwatcher/config` — Zod schemas for env validation. Never reads `process.env` directly.
+- `@dwatcher/types` — shared TypeScript types and interfaces only. No runtime logic. No executable code. No build step.
+- `@dwatcher/audio` — pure PCM/volume/feature/WAV utilities operating on raw buffers. No native modules.
+- `@dwatcher/ml` — TFLite inference pipeline skeleton. Depends on `@dwatcher/types` and `@dwatcher/audio`.
 - `apps/*` — final applications. Never imported by other packages or apps.
-- `packages/*` — reusable internal libraries. Avoid app-specific UI here.
-
-### Shared store API design (`@dwatcher/hooks`)
-
-When a shared Zustand store represents a small multi-field draft or handoff object, prefer exposing:
-
-- one **combined setter** for the common atomic success path (for example, setting `selectedSuggestion` + `addressDetails` together after a successful lookup), and
-- **separate setters / clear helpers** for each sub-state field when callers may update only one part later.
-
-Example pattern:
-
-- `setOnboardingAddressSelection(...)` for the atomic handoff
-- `setSelectedSuggestion(...)`, `setAddressDetails(...)` for convenience updates
-- `clearSelectedSuggestion()`, `clearAddressDetails()`, plus a full `clearOnboardingAddressSelection()` reset helper
-
-Do not rely on passing `undefined` for omitted fields in a combined setter as a way to "leave the old value alone". In Zustand, update only the keys you intentionally want to change.
+- `packages/*` — reusable internal libraries. No UI components in shared packages.
 
 ### Naming
 
@@ -56,7 +37,7 @@ Always use `workspace:*` — never pin versions between internal packages:
 {
   "dependencies": {
     "@dwatcher/types": "workspace:*",
-    "@dwatcher/api": "workspace:*"
+    "@dwatcher/audio": "workspace:*"
   }
 }
 ```
@@ -69,4 +50,4 @@ When creating a new package under `packages/`:
 2. Add `tsconfig.json` extending the repo base config
 3. Create `src/index.ts` as the primary entry point
 4. Add scripts your package needs (`build`, `lint`, `typecheck`, `test`, etc.)
-5. Run `make install` from the repo root on the host to refresh the workspace lockfile; restart the web dev server if it is running so it picks up the new graph
+5. Run `make install` from the repo root on the host to refresh the workspace lockfile
