@@ -2,7 +2,7 @@
 
 ### Execution environment (agents)
 
-- **Run mobile work on the host.** Prefer repo-root pnpm workspace commands such as `pnpm --filter @nestled/mobileapp start`, `pnpm --filter @nestled/mobileapp lint`, and `pnpm --filter @nestled/mobileapp typecheck`.
+- **Run mobile work on the host.** Prefer repo-root pnpm workspace commands such as `pnpm --filter @dwatcher/mobileapp start`, `pnpm --filter @dwatcher/mobileapp lint`, and `pnpm --filter @dwatcher/mobileapp typecheck`.
 - Use `cd apps/mobileapp` and `npx expo …` for Expo-native commands (`expo install`, `expo-doctor`, `expo prebuild`, EAS, simulators).
 - Do **not** substitute Expo CLI with ad-hoc wrappers; use `make expo` or filtered `pnpm`/`npx expo` as documented.
 - After changing mobile dependencies, run **`pnpm install` from the monorepo root on the host** so `pnpm-lock.yaml` stays in sync.
@@ -10,7 +10,7 @@
 ### Stack
 
 - Framework: **React Native + Expo** (Expo Router)
-- Package name: `@nestled/mobileapp`
+- Package name: `@dwatcher/mobileapp`
 - Location: `apps/mobileapp/`
 
 ### Router
@@ -28,22 +28,22 @@ All screen UI lives under **`apps/mobileapp/app/screens/`** — one file per scr
 export { WelcomeScreen as default } from './screens/WelcomeScreen'
 ```
 
-- Do **not** implement screen UI in route files, `_layout.tsx`, or other `app/` files. Shared UI belongs in `src/components/`; tokens in `@nestled/theme` / `src/theme/`.
+- Do **not** implement screen UI in route files, `_layout.tsx`, or other `app/` files. Shared UI belongs in `src/components/`; tokens in `@dwatcher/theme` / `src/theme/`.
 
 ### Environment variables
 
 - Prefer Expo’s supported public env patterns (`EXPO_PUBLIC_*` in `apps/mobileapp/.env`).
 - Keep secrets out of the repo; document keys (no real values) in `apps/mobileapp/.env.example`.
-- **`EXPO_PUBLIC_API_BASE_URL` is required** for backend API calls (`@nestled/api`). Copy `apps/mobileapp/.env.example` → `.env`; use a host reachable from the emulator or device (see comments in the example). Restart Expo after changes.
+- **`EXPO_PUBLIC_API_BASE_URL` is required** for backend API calls (`@dwatcher/api`). Copy `apps/mobileapp/.env.example` → `.env`; use a host reachable from the emulator or device (see comments in the example). Restart Expo after changes.
 
 ### Internal package imports
 
 ```ts
-import { … } from '@nestled/copy'
-import type { … } from '@nestled/types'
-import { … } from '@nestled/hooks'
-import { … } from '@nestled/utils'
-import { … } from '@nestled/api'
+import { … } from '@dwatcher/copy'
+import type { … } from '@dwatcher/types'
+import { … } from '@dwatcher/hooks'
+import { … } from '@dwatcher/utils'
+import { … } from '@dwatcher/api'
 ```
 
 ### Platform-specific code
@@ -63,7 +63,7 @@ The following features exist only in `apps/mobileapp` and must not be added to s
 ### Development (host)
 
 ```bash
-pnpm --filter @nestled/mobileapp start
+pnpm --filter @dwatcher/mobileapp start
 ```
 
 ### Production builds (host)

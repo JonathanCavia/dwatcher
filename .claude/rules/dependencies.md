@@ -15,9 +15,9 @@ Use **host `pnpm` from the repo root** for the whole monorepo. The root `Makefil
 make install
 
 # Add to a specific workspace
-pnpm --filter @nestled/webapp add react-hook-form
-pnpm --filter @nestled/api add axios
-pnpm --filter @nestled/mobileapp add -D @types/react
+pnpm --filter @dwatcher/webapp add react-hook-form
+pnpm --filter @dwatcher/api add axios
+pnpm --filter @dwatcher/mobileapp add -D @types/react
 
 # Add tooling to the root (eslint, typescript, etc.)
 pnpm add -D eslint -w
@@ -38,8 +38,8 @@ pnpm -r lint                          # lint all workspaces
 pnpm -r format                        # check formatting in all workspaces
 pnpm -r typecheck                     # type-check all workspaces
 pnpm -r test                          # run workspace tests
-pnpm --filter @nestled/webapp build   # one-off Next.js production build
-pnpm --filter @nestled/mobileapp start # Expo dev server from repo root
+pnpm --filter @dwatcher/webapp build   # one-off Next.js production build
+pnpm --filter @dwatcher/mobileapp start # Expo dev server from repo root
 ```
 
 The root `Makefile` wraps the common host commands (`make install`, `make start`, `make restart`, `make refresh`, `make clean`, `make lint`, `make typecheck`, `make test`, etc.).
@@ -48,7 +48,7 @@ The root `Makefile` wraps the common host commands (`make install`, `make start`
 
 Apps depend on packages; bump or build packages before relying on new exports in apps. Follow each workspace's `package.json` scripts when a package has a build step.
 
-Note: `@nestled/types` requires no build — it ships source directly.
+Note: `@dwatcher/types` requires no build — it ships source directly.
 
 ### Environment variables
 

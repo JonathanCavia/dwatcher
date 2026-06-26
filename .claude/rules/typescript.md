@@ -2,20 +2,20 @@
 
 ### Shared types location
 
-`@nestled/types` is the single source of truth for all types shared across apps or packages.
+`@dwatcher/types` is the single source of truth for all types shared across apps or packages.
 
-**Belongs in `@nestled/types`:**
+**Belongs in `@dwatcher/types`:**
 - Domain entity interfaces (`User`, `Asset`, `Household`, `Task`, `Property`, etc.)
 - API request and response shapes
 - Shared enums (`HouseholdRole`, `TaskStatus`, etc.)
 - Utility types used in more than one package
 
-**Does NOT belong in `@nestled/types`:**
+**Does NOT belong in `@dwatcher/types`:**
 - Types used only inside a single package — keep them local to that package
 - React component prop types tied to one app — keep them local
 - Any runtime logic or executable code — types package is types only
 
-### `@nestled/types` internal structure
+### `@dwatcher/types` internal structure
 
 ```
 packages/types/src/
@@ -25,7 +25,7 @@ packages/types/src/
 └── enums/           ← shared enums and constants
 ```
 
-### `@nestled/types` has no build step
+### `@dwatcher/types` has no build step
 
 Its `package.json` points directly to source:
 ```json
@@ -36,19 +36,19 @@ Its `package.json` points directly to source:
 }
 ```
 
-Do not add a `build` script or `dist/` to `@nestled/types`.
+Do not add a `build` script or `dist/` to `@dwatcher/types`.
 
 ### Dependency rule for types
 
-`@nestled/types` must never import from any other internal `@nestled/*` package.
+`@dwatcher/types` must never import from any other internal `@dwatcher/*` package.
 
 ```
-@nestled/types     ← imports nothing internal
+@dwatcher/types     ← imports nothing internal
       ↑
-      ├── @nestled/api
-      ├── @nestled/hooks
-      ├── @nestled/webapp
-      └── @nestled/mobileapp
+      ├── @dwatcher/api
+      ├── @dwatcher/hooks
+      ├── @dwatcher/webapp
+      └── @dwatcher/mobileapp
 ```
 
 ### Imports
@@ -57,10 +57,10 @@ Always import from a package's entry point — never from internal paths:
 
 ```ts
 // ❌ Never
-import { Asset } from '@nestled/types/src/entities/asset'
+import { Asset } from '@dwatcher/types/src/entities/asset'
 
 // ✅ Always
-import { Asset } from '@nestled/types'
+import { Asset } from '@dwatcher/types'
 ```
 
 ### tsconfig

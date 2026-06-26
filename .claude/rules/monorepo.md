@@ -3,31 +3,31 @@
 ### Workspace layout
 
 ```
-nestled-frontend/
+dwatcher-frontend/
 ├── packages/
-│   ├── copy/      → @nestled/copy
-│   ├── types/     → @nestled/types
-│   ├── hooks/     → @nestled/hooks
-│   ├── utils/     → @nestled/utils
-│   ├── api/       → @nestled/api
-│   └── theme/     → @nestled/theme
+│   ├── copy/      → @dwatcher/copy
+│   ├── types/     → @dwatcher/types
+│   ├── hooks/     → @dwatcher/hooks
+│   ├── utils/     → @dwatcher/utils
+│   ├── api/       → @dwatcher/api
+│   └── theme/     → @dwatcher/theme
 └── apps/
-    ├── webapp/    → @nestled/webapp   (Next.js, App Router)
-    └── mobileapp/ → @nestled/mobileapp (React Native + Expo)
+    ├── webapp/    → @dwatcher/webapp   (Next.js, App Router)
+    └── mobileapp/ → @dwatcher/mobileapp (React Native + Expo)
 ```
 
 ### Package responsibilities
 
-- `@nestled/copy` — shared labels, text content, and copy-only data. No UI components.
-- `@nestled/types` — shared TypeScript types and interfaces only. No runtime logic. No executable code.
-- `@nestled/hooks` — React hooks, Zustand stores, and small shared client patterns used by apps.
-- `@nestled/utils` — pure utility functions and small platform-neutral view-model shaping.
-- `@nestled/api` — API client and TanStack Query hooks for backend calls.
-- `@nestled/theme` — shared design tokens, CSS variables, and Tailwind bridge.
+- `@dwatcher/copy` — shared labels, text content, and copy-only data. No UI components.
+- `@dwatcher/types` — shared TypeScript types and interfaces only. No runtime logic. No executable code.
+- `@dwatcher/hooks` — React hooks, Zustand stores, and small shared client patterns used by apps.
+- `@dwatcher/utils` — pure utility functions and small platform-neutral view-model shaping.
+- `@dwatcher/api` — API client and TanStack Query hooks for backend calls.
+- `@dwatcher/theme` — shared design tokens, CSS variables, and Tailwind bridge.
 - `apps/*` — final applications. Never imported by other packages or apps.
 - `packages/*` — reusable internal libraries. Avoid app-specific UI here.
 
-### Shared store API design (`@nestled/hooks`)
+### Shared store API design (`@dwatcher/hooks`)
 
 When a shared Zustand store represents a small multi-field draft or handoff object, prefer exposing:
 
@@ -44,9 +44,9 @@ Do not rely on passing `undefined` for omitted fields in a combined setter as a 
 
 ### Naming
 
-- All internal packages use the `@nestled/` scope.
+- All internal packages use the `@dwatcher/` scope.
 - New packages go in `packages/`, new apps go in `apps/`.
-- Package name must match its directory: `packages/foo` → `@nestled/foo`.
+- Package name must match its directory: `packages/foo` → `@dwatcher/foo`.
 
 ### Referencing internal packages
 
@@ -55,8 +55,8 @@ Always use `workspace:*` — never pin versions between internal packages:
 ```json
 {
   "dependencies": {
-    "@nestled/types": "workspace:*",
-    "@nestled/api": "workspace:*"
+    "@dwatcher/types": "workspace:*",
+    "@dwatcher/api": "workspace:*"
   }
 }
 ```
@@ -65,7 +65,7 @@ Always use `workspace:*` — never pin versions between internal packages:
 
 When creating a new package under `packages/`:
 
-1. Add `package.json` with `"name": "@nestled/<name>"` and `"private": true`
+1. Add `package.json` with `"name": "@dwatcher/<name>"` and `"private": true`
 2. Add `tsconfig.json` extending the repo base config
 3. Create `src/index.ts` as the primary entry point
 4. Add scripts your package needs (`build`, `lint`, `typecheck`, `test`, etc.)

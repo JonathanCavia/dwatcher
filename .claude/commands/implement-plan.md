@@ -12,7 +12,7 @@ If this command is run without any content besides `/implement-plan`, ask the us
 
 **This command handles 2 types of planning+implementation:**
  * `single-plan-implementation`: scope is just one repo
- * `multi-plan-implementation`: scope impacts both `nestled-backend` and `nestled-frontend`
+ * `multi-plan-implementation`: scope impacts both `dwatcher-backend` and `dwatcher-frontend`
 
 ---
 
@@ -23,11 +23,12 @@ If this command is run without any content besides `/implement-plan`, ask the us
 1. If unsure about `single` vs `multi` plan scope, use `AskHuman`.
 2. Launch **Explore agents in parallel** using the formal agent definition:
    ```
-   Agent(subagent_type="explore", description="Explore patterns and reusable code", model="opus", schema=EXPLORE_SCHEMA)
-   Agent(subagent_type="explore", description="Explore tests, types, and hooks", model="opus", schema=EXPLORE_SCHEMA)
-   Agent(subagent_type="explore", description="Explore routes and integration points", model="opus", schema=EXPLORE_SCHEMA)
+   Agent(subagent_type="explore", description="Explore patterns and code", prompt="Search the codebase for existing patterns, reusable utilities, conventions, and architectural patterns. Map related files, routes, models, schemas, and tests. Return findings as structured JSON following your output format.", model="opus")
+   Agent(subagent_type="explore", description="Explore tests and types", prompt="Search the codebase for test patterns, type definitions, shared hooks, and integration points. Identify gaps in test coverage, missing types, and hook usage patterns. Return findings as structured JSON following your output format.", model="opus")
+   Agent(subagent_type="explore", description="Explore routes and integrations", prompt="Search the codebase for route definitions, API endpoints, integration points between packages/apps, and cross-cutting concerns. Identify all entry points and data flow paths. Return findings as structured JSON following your output format.", model="opus")
    ```
    - For `multi-plan-implementation`, add agents for cross-repo exploration.
+   - Each explore agent returns structured JSON per its agent definition output format. Parse and validate before passing forward.
 
 3. **DO NOT synthesize findings.** Pass the raw validated ExploreReport outputs directly to Phase 2.
 
@@ -40,7 +41,7 @@ If this command is run without any content besides `/implement-plan`, ask the us
 1. Use `EnterPlanMode` to enter plan mode.
 2. Launch the **Plan agent** with all ExploreReport outputs from Phase 1:
    ```
-   Agent(subagent_type="plan", description="Design implementation plan", model="opus", schema=PLAN_SCHEMA)
+   Agent(subagent_type="plan", description="Design implementation plan", prompt="Design an implementation plan from the following exploration reports: [INSERT_EXPLORE_REPORTS]. Follow existing plan conventions from docs/plans/. Design concrete stages with exact file paths, function signatures, and code patterns. Propose conventional-commit messages. Return the plan as structured JSON following your output format.", model="opus")
    ```
    The Plan agent:
    - Reads existing plans from `docs/plans/*.md` to match structure and numbering
@@ -69,7 +70,7 @@ If this command is run without any content besides `/implement-plan`, ask the us
 
 2. Launch the **Implement agent/s**:
    ```
-   Agent(subagent_type="implement", description="Execute plan stages", model="sonnet", schema=IMPLEMENT_SCHEMA, isolation="worktree")
+   Agent(subagent_type="implement", description="Execute plan stages", prompt="Execute the plan stages from [PLAN_FILE_PATH]. Implement each stage sequentially: read the stage, implement changes, run format-write, run tests. Start with model=sonnet and self-escalate to opus if stages fail repeatedly or involve complex changes. Return progress as structured JSON following your output format.", model="sonnet", isolation="worktree")
    ```
    - For `multi-plan-implementation`, launch 2 implement agents in parallel (one per repo)
    - The implement agent self-adapts its model: starts as `sonnet`, escalates to `opus` if stages fail repeatedly or involve DB/auth/complexity
@@ -89,11 +90,11 @@ If this command is run without any content besides `/implement-plan`, ask the us
 
 Launch these **3 agents simultaneously** using formal definitions:
 
-| Agent Type | Purpose |
-|---|---|
-| `subagent_type="review"` | Adversarial review: bugs, style, security, reuse. schema=REVIEW_SCHEMA |
-| `subagent_type="qa-scenarist"` | Manual test scenarios. schema=QA_SCHEMA |
-| `subagent_type="summarize"` | User-facing summary. schema=SUMMARY_SCHEMA |
+```
+Agent(subagent_type="review", description="Review implementation changes", prompt="Review all changed files from the implementation. Check correctness, security, style, and reuse. Be adversarial — assume there ARE bugs. Categorize every finding by severity. Return findings as structured JSON following your output format.", model="opus")
+Agent(subagent_type="qa-scenarist", description="Generate QA test scenarios", prompt="Create manual test scenarios for the implemented changes. Focus on user-visible behavior, edge cases, error states, and regressions. Every scenario must be step-by-step and testable by a human. Return scenarios as structured JSON following your output format.", model="opus")
+Agent(subagent_type="summarize", description="Write user-facing summary", prompt="Write a clear, non-technical summary of what was implemented. Translate technical changes into plain language for product managers and stakeholders. Return the summary as structured JSON following your output format.", model="opus")
+```
 
 For `multi-plan-implementation`, review agents cover both repos.
 
@@ -107,7 +108,7 @@ For `multi-plan-implementation`, review agents cover both repos.
 
 1. Present review findings to user. If fixes requested, re-launch the implement agent:
    ```
-   Agent(subagent_type="implement", description="Apply review fixes", ...)
+   Agent(subagent_type="implement", description="Apply review fixes", prompt="Apply the following review fixes to the codebase: [INSERT_REVIEW_FINDINGS]. Fix each finding, run format-write, and run tests. Return progress as structured JSON following your output format.", model="sonnet")
    ```
 
 2. Update plan document/s with:
@@ -128,11 +129,11 @@ For `multi-plan-implementation`, review agents cover both repos.
 ## Key Principles
 
 1. **You are a passthrough.** Delegate everything. Never synthesize, summarize, or modify agent outputs.
-2. **Formal agents only.** Use `subagent_type` from `.claude/agents/`, always with a schema.
+2. **Formal agents only.** Use `subagent_type` from `.claude/agents/`, always with `description` (3-5 words) and `prompt` (full task description). Agents return structured JSON per their output format — parse and validate before passing forward.
 3. **Right model per role.** `opus` for explore/plan/review/qa/summarize. `sonnet` for implement (it self-escalates if needed).
 4. **Human at decision points.** User approves plan, chooses execution mode, and confirms push.
 5. **Parallel where safe.** Phase 1 and Phase 4 run concurrently.
-6. **Validated outputs.** Every agent returns structured JSON validated by its schema — you trust it as-is.
+6. **Validated outputs.** Every agent returns structured JSON per its agent definition output format — parse, validate, and pass forward as-is.
 
 ## DIRECTIVES TO ALWAYS CONSIDER:
 
