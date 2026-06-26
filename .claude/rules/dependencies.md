@@ -6,18 +6,18 @@ This repo uses **pnpm** exclusively. Never use npm or yarn.
 
 ### Where dependency commands run
 
-Use **host `pnpm` from the repo root** for the whole monorepo.
+Use **host `pnpm` from the repo root** for the whole monorepo. The root `Makefile` exposes `make install` as the standard wrapper for `pnpm install`.
 
 ### Installing dependencies
 
 ```bash
 # Refresh all workspace dependencies / lockfile
-pnpm install
+make install
 
 # Add to a specific workspace
-pnpm --filter @dwatcher/mobile add react-native-vision-camera
-pnpm --filter @dwatcher/backend add zod
-pnpm --filter @dwatcher/mobile add -D @types/react
+pnpm --filter @nestled/webapp add react-hook-form
+pnpm --filter @nestled/api add axios
+pnpm --filter @nestled/mobileapp add -D @types/react
 
 # Add tooling to the root (eslint, typescript, etc.)
 pnpm add -D eslint -w
@@ -26,52 +26,41 @@ pnpm add -D eslint -w
 For Expo-managed mobile packages, prefer Expo's installer on the host:
 
 ```bash
-cd apps/mobile && npx expo install <package>
+cd apps/mobileapp && npx expo install <package>
 ```
 
-After dependency changes, run `pnpm install` from the repo root so `pnpm-lock.yaml` matches; restart the mobile dev server if it is running.
+After dependency changes, run `make install` from the repo root so `pnpm-lock.yaml` matches; restart the web dev server if it is running by stopping `make start` with `Ctrl+C` and running it again, or use `make restart` / `make refresh`.
 
 ### Common host commands
 
 ```bash
 pnpm -r lint                          # lint all workspaces
+pnpm -r format                        # check formatting in all workspaces
 pnpm -r typecheck                     # type-check all workspaces
 pnpm -r test                          # run workspace tests
-pnpm --filter @dwatcher/mobile build  # one-off production build
-pnpm --filter @dwatcher/mobile start  # Expo dev server from repo root
-pnpm --filter @dwatcher/backend build # build backend
-pnpm --filter @dwatcher/backend dev   # start backend dev server
+pnpm --filter @nestled/webapp build   # one-off Next.js production build
+pnpm --filter @nestled/mobileapp start # Expo dev server from repo root
 ```
+
+The root `Makefile` wraps the common host commands (`make install`, `make start`, `make restart`, `make refresh`, `make clean`, `make lint`, `make typecheck`, `make test`, etc.).
 
 ### Build order
 
 Apps depend on packages; bump or build packages before relying on new exports in apps. Follow each workspace's `package.json` scripts when a package has a build step.
 
-Note: `@dwatcher/types` requires no build — it ships source directly.
-
-### Key mobile dependencies
-
-| Package | Purpose |
-|---------|---------|
-| `react-native-vision-camera` | Camera preview + frame processing for ML |
-| `@siteed/expo-audio-studio` | Raw PCM buffer access, foreground service, 16kHz/16-bit/mono recording |
-| `react-native-webrtc` | WebRTC peer connections for audio streaming |
-| `tflite-react-native` | On-device TFLite model inference |
-| `expo-sqlite` | Local storage of detection events and sessions |
-| `zustand` | State management for audio capture, monitoring sessions, detection events |
+Note: `@nestled/types` requires no build — it ships source directly.
 
 ### Environment variables
 
-- **Mobile** (`apps/mobile`): Use `EXPO_PUBLIC_*` prefix for all public env vars. Documented in `apps/mobile/.env.example`.
-- **Backend** (`apps/backend`): Use Zod validation via `@dwatcher/config` to parse and validate environment variables at startup.
+- Each app owns its own `.env.local` (not committed) and `.env.example` (committed) when env vars are introduced.
 - Internal packages should avoid reading `process.env` directly for app-specific config — pass values from the app.
 
 ```ts
 // ❌ Avoid in a reusable package
-const url = process.env.EXPO_PUBLIC_SIGNALING_URL
+const url = process.env.NEXT_PUBLIC_API_URL
 
 // ✅ Prefer configuration passed in
-export function createSignalingClient(config: { signalingUrl: string }) {
-  /* ... */
+export function createApiClient(config: { baseUrl: string }) {
+  /* … */
 }
 ```

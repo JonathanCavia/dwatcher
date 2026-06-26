@@ -2,30 +2,30 @@
 
 ### Shared types location
 
-`@dwatcher/types` is the single source of truth for all types shared across apps or packages.
+`@nestled/types` is the single source of truth for all types shared across apps or packages.
 
-**Belongs in `@dwatcher/types`:**
-- Domain entity interfaces (`Dog`, `BarkEvent`, `Session`, `AnxietyEvent`, `DetectionEvent`, etc.)
+**Belongs in `@nestled/types`:**
+- Domain entity interfaces (`User`, `Asset`, `Household`, `Task`, `Property`, etc.)
 - API request and response shapes
-- Shared enums (`DetectionClass`, `AlertLevel`, `SessionState`, etc.)
+- Shared enums (`HouseholdRole`, `TaskStatus`, etc.)
 - Utility types used in more than one package
 
-**Does NOT belong in `@dwatcher/types`:**
+**Does NOT belong in `@nestled/types`:**
 - Types used only inside a single package — keep them local to that package
 - React component prop types tied to one app — keep them local
 - Any runtime logic or executable code — types package is types only
 
-### `@dwatcher/types` internal structure
+### `@nestled/types` internal structure
 
 ```
 packages/types/src/
-├── index.ts              ← re-exports everything
-├── entities/             ← domain interfaces (Dog, BarkEvent, Session, AnxietyEvent...)
-├── api/                  ← request and response shapes
-└── enums/                ← shared enums and constants
+├── index.ts         ← re-exports everything
+├── entities/        ← domain interfaces (User, Asset, Household...)
+├── api/             ← request and response shapes
+└── enums/           ← shared enums and constants
 ```
 
-### `@dwatcher/types` has no build step
+### `@nestled/types` has no build step
 
 Its `package.json` points directly to source:
 ```json
@@ -36,27 +36,20 @@ Its `package.json` points directly to source:
 }
 ```
 
-Do not add a `build` script or `dist/` to `@dwatcher/types`.
+Do not add a `build` script or `dist/` to `@nestled/types`.
 
 ### Dependency rule for types
 
-`@dwatcher/types` must never import from any other internal `@dwatcher/*` package.
+`@nestled/types` must never import from any other internal `@nestled/*` package.
 
 ```
-@dwatcher/types     ← imports nothing internal
+@nestled/types     ← imports nothing internal
       ↑
-      ├── @dwatcher/audio
-      ├── @dwatcher/ml
-      ├── @dwatcher/config
-      ├── @dwatcher/mobile
-      └── @dwatcher/backend
+      ├── @nestled/api
+      ├── @nestled/hooks
+      ├── @nestled/webapp
+      └── @nestled/mobileapp
 ```
-
-### Shared enum values
-
-- **DetectionClass**: `bark`, `whine`, `growl`, `howl`, `silence`
-- **AlertLevel**: `info`, `warning`, `critical`
-- **SessionState**: `idle`, `monitoring`, `error`
 
 ### Imports
 
@@ -64,10 +57,10 @@ Always import from a package's entry point — never from internal paths:
 
 ```ts
 // ❌ Never
-import { BarkEvent } from '@dwatcher/types/src/entities/bark-event'
+import { Asset } from '@nestled/types/src/entities/asset'
 
 // ✅ Always
-import { BarkEvent } from '@dwatcher/types'
+import { Asset } from '@nestled/types'
 ```
 
 ### tsconfig
