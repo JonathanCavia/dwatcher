@@ -2,14 +2,22 @@ cl# dwatcher — System Architecture
 
 ## 1. Overview
 
-dwatcher is a mobile dog monitoring and surveillance application that turns an Android phone into a dedicated dog-watching device. It captures audio and video through the phone's built-in sensors, performs on-device machine learning inference for bark detection and anxiety classification, streams live feeds via WebRTC, and logs events for long-term behavior analysis.
+dwatcher is a mobile application for measuring separation anxiety treatment response in dogs. It turns an Android phone into a dedicated dog-monitoring device that captures audio and video unattended, performs on-device machine learning inference for behavior detection, and provides quantitative tracking of the dog's anxiety levels over time.
+
+The app is built on **three pillars**:
+1. **Passive Monitoring** — unattended audio/video recording with on-device ML detection of separation anxiety behaviors (barking, howling, pacing, etc.)
+2. **Training (Adiestramiento)** — logging of technical skill training sessions with exercise metrics (repetitions, rewards, success rate)
+3. **Education (Educación)** — tracking behavior modification sessions (LAT, desensitization, absence exposure) with threshold and baseline monitoring
+
+These three pillars feed into a unified **Separation Anxiety Profile** that measures treatment response through period comparison, trend analysis, and behavior breakdown.
 
 ### Purpose
 
-- **Real-time monitoring**: Watch and listen to your dog when you are away from home.
-- **On-device intelligence**: Detect barks, whines, growls, pacing, and other behaviors without sending raw audio to the cloud.
-- **Live streaming**: Peer-to-peer audio/video streaming directly from the device to a viewer dashboard.
-- **Behavior analytics**: Track patterns over time — when your dog is most active, anxious, or vocal.
+- **Treatment response measurement**: Quantify whether a dog's separation anxiety is improving, worsening, or stable — objectively, with data.
+- **On-device intelligence**: Detect barks, howls, whines, pacing, furniture surfing, zoomies, and anxious posture without sending raw audio/video to the cloud.
+- **Training tracking**: Log training sessions with detailed metrics — exercises, repetitions, reward rate, success rate, and communication methods.
+- **Education tracking**: Record behavior modification sessions with threshold tracking, baseline restoration, and intensity measurement.
+- **Long-term analytics**: Compare periods, visualize trends, and see which specific behaviors are changing over time.
 
 ### Monorepo Approach
 
@@ -540,12 +548,64 @@ App Root
  │    ├── Live streaming indicator (WebRTC status)
  │    └── Battery/network status footer
  │
- ├── HistoryScreen (past events)
+ ├── PostSessionSummaryScreen (after monitoring ends)
+ │    ├── Anxiety index score with color code
+ │    ├── Behavior breakdown list (auto-detected)
+ │    ├── Manual behavior checklist (urination, defecation, destruction)
+ │    ├── Comparison to baseline ("18% below your baseline of 71")
+ │    └── Save & view history button
+ │
+ ├── HistoryScreen (past monitoring sessions)
  │    ├── Session list (date, duration, event count)
  │    ├── Session detail view (event timeline, snapshots)
  │    ├── Filter controls (event type, date range)
  │    ├── Event playback (audio snippet, snapshot)
  │    └── Export/share event data
+ │
+ ├── AnxietyProfileScreen (per-dog SA profile)
+ │    ├── Baseline anxiety index display
+ │    ├── Trend chart (anxiety index over time)
+ │    ├── Behavior weight editor (tune per-behavior weights)
+ │    ├── Period comparison launcher
+ │    └── Learning session cross-reference
+ │
+ ├── ComparisonScreen (period vs period)
+ │    ├── Period A / Period B selectors (date ranges)
+ │    ├── Side-by-side stats (avg, std dev, change %)
+ │    ├── Trend indicator (improving/worsening/stable)
+ │    ├── Per-behavior breakdown chart
+ │    └── Export comparison report
+ │
+ ├── LearningScreen (unified session list)
+ │    ├── Session list with activity type badges
+ │    ├── Filter by category (training / education / all)
+ │    ├── Create new session FAB
+ │    └── Session detail on tap
+ │
+ ├── LearningSessionScreen (create/edit learning session)
+ │    ├── Date picker, duration, notes
+ │    ├── Activity list with add/remove/reorder
+ │    ├── Per-activity: type selector → conditional form
+ │    │   ├── Obedience: reps, success, rewarded, response time, distance
+ │    │   ├── LAT: stimulus distance, intensity, sensitized, baseline time
+ │    │   ├── Desensitization: stimulus distance, intensity, sensitized, baseline
+ │    │   ├── Absence Exposure: duration, intensity, vocalizations, baseline
+ │    │   ├── Boundary Setting: intensity, response time
+ │    │   └── Custom: type name, progress value, flexible metrics
+ │    ├── Communication method picker per activity
+ │    └── Difficulty factor per repetition (preset or ad-hoc)
+ │
+ ├── GoalCatalogScreen (browse learning goals)
+ │    ├── Category tabs (training / education / all)
+ │    ├── Goal list with exercise count
+ │    ├── Create custom goal
+ │    └── Tap to view exercises for goal
+ │
+ ├── ExerciseCatalogScreen (browse exercises)
+ │    ├── Filter by goal
+ │    ├── Predefined vs custom tabs
+ │    ├── Create custom exercise
+ │    └── Exercise detail with description
  │
  └── SettingsScreen (configuration)
       ├── Dog profile management (name, breed, weight, photo)
@@ -567,6 +627,18 @@ App Root
 | `BarkCounter` | Session bark counter showing total, rate/min, and peak hour indicator | `src/components/BarkCounter.tsx` |
 | `AnxietyGauge` | Circular or bar gauge showing composite anxiety score, color-coded (green/yellow/red) | `src/components/AnxietyGauge.tsx` |
 | `SessionCard` | Session summary card for history lists (date, duration, event count, thumbnail) | `src/components/SessionCard.tsx` |
+| `BehaviorWeightSlider` | Slider to adjust a behavior's weight in the anxiety index | `src/components/BehaviorWeightSlider.tsx` |
+| `TrendChart` | Line chart showing anxiety index over time with baseline reference line | `src/components/TrendChart.tsx` |
+| `PeriodComparisonCard` | Side-by-side stats card for period comparison | `src/components/PeriodComparisonCard.tsx` |
+| `ActivityTypeSelector` | Picker for activity type with type-specific icon and color | `src/components/ActivityTypeSelector.tsx` |
+| `RepetitionList` | Ordered list of repetitions per activity with inline metric display | `src/components/RepetitionList.tsx` |
+| `ObedienceRepInput` | Repetition input for obedience: success, rewarded, response time, distance | `src/components/ObedienceRepInput.tsx` |
+| `LATRepInput` | Repetition input for LAT: distance, intensity, sensitized, baseline time | `src/components/LATRepInput.tsx` |
+| `AbsenceExposureRepInput` | Repetition input for absence exposure: duration, vocalizations, baseline | `src/components/AbsenceExposureRepInput.tsx` |
+| `CustomRepInput` | Repetition input for custom activities: flexible metrics | `src/components/CustomRepInput.tsx` |
+| `CommunicationMethodPicker` | Type + description picker per activity (verbal, physical, whistle, facial) | `src/components/CommunicationMethodPicker.tsx` |
+| `DifficultyFactorInput` | Per-repetition difficulty entry: preset picker or ad-hoc location/time/level | `src/components/DifficultyFactorInput.tsx` |
+| `BaselineTimer` | Timer tracking return to baseline after sensitization | `src/components/BaselineTimer.tsx` |
 | `PrimaryButton` | Full-width action button consistent across screens (rounded-xl, press animation) | `src/components/PrimaryButton.tsx` |
 | `StatusBadge` | Network, battery, and service status indicator | `src/components/StatusBadge.tsx` |
 
@@ -615,6 +687,38 @@ interface SettingsStore {
   streamingEnabled: boolean;
   updateSettings: (partial: Partial<SettingsState>) => void;
   setDog: (dog: Dog) => void;
+}
+
+// stores/learning-store.ts
+interface LearningStore {
+  sessions: LearningSession[];
+  goals: LearningGoal[];
+  exercises: Exercise[];
+  difficultyPresets: DifficultyPreset[];
+  currentSession: LearningSession | null;
+  currentActivities: SessionActivity[];
+  setSessions: (sessions: LearningSession[]) => void;
+  setGoals: (goals: LearningGoal[]) => void;
+  setExercises: (exercises: Exercise[]) => void;
+  setPresets: (presets: DifficultyPreset[]) => void;
+  startSession: (session: LearningSession) => void;
+  addActivity: (activity: SessionActivity) => void;
+  removeActivity: (id: string) => void;
+  reorderActivity: (id: string, newOrder: number) => void;
+  saveSession: () => void;
+}
+
+// stores/anxiety-profile-store.ts
+interface AnxietyProfileStore {
+  profile: SeparationAnxietyProfile | null;
+  snapshots: AnxietyIndexSnapshot[];
+  baselineSnapshots: AnxietyIndexSnapshot[];
+  comparison: PeriodComparison | null;
+  setProfile: (profile: SeparationAnxietyProfile) => void;
+  addSnapshot: (snapshot: AnxietyIndexSnapshot) => void;
+  updateBehaviorWeights: (weights: Record<string, number>) => void;
+  computeBaseline: () => void;
+  comparePeriods: (fromA: string, toA: string, fromB: string, toB: string) => void;
 }
 ```
 

@@ -60,6 +60,7 @@ The following `.claude/rules/*.md` files apply to specific paths in the repo:
 
 | File                         | Content                                                       |
 | ---------------------------- | ------------------------------------------------------------- |
+| `docs/PRODUCT.md`            | Product vision, three pillars, behavior catalog, anxiety index |
 | `docs/ARCHITECTURE.md`       | Full system architecture, package responsibilities, data flow |
 | `docs/GENERAL-GUIDELINES.md` | Development conventions, command reference, coding standards  |
 | `docs/SETUP-REFERENCE.md`    | Prerequisites, environment setup, build instructions          |

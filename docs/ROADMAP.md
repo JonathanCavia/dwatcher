@@ -560,11 +560,178 @@ The roadmap is organized into phases that build on each other. Each phase has a 
 
 ---
 
-## Future Considerations (Beyond Phase 7)
+## Phase 8: Unified Learning System (Adiestramiento + Educación)
 
+**Goal**: Implement the unified `LearningSession` model — a single session type that can contain both training and education activities, mixed freely. Track goals, exercises, repetitions, difficulty factors, communication methods, and per-activity-type metrics. Design for extensibility and future ML integration.
+
+**Dependencies**: Phase 0 (types package). Can be developed in parallel with monitoring phases.
+
+**Scope**: Mobile app + types package.
+
+### Deliverables
+
+1. **Unified learning data model**
+   - `LearningGoal` entity: name, category (training/education), description — single table for all goals, filterable by category.
+   - `Exercise` entity: name, associated goal, activity type, predefined/custom.
+   - `LearningSession` entity: dog, date, duration, notes. Unified container for all activity types.
+   - `SessionActivity` linking: exercise reference + activity type + communication methods + order within session.
+   - `ActivityRepetition` discriminated union: specific fields per activity type (obedience, LAT, desensitization, absence_exposure, boundary_setting, custom).
+   - `DifficultyFactor` + `DifficultyPreset`: environmental conditions per repetition for scientific comparison.
+   - `CommunicationMethod`: simplified type + free-text description.
+
+2. **Learning session CRUD**
+   - Create sessions with mixed activities: LAT → Obedience → LAT in the same session.
+   - Add/remove/reorder activities within a session.
+   - Per-activity-type repetition forms with type-specific fields.
+   - Session create/edit/delete with validation.
+
+3. **Learning goals and exercise catalog**
+   - Predefined catalog of learning goals (training + education).
+   - Predefined exercises per goal.
+   - Custom goal and exercise creation.
+   - Category filter (training / education / all).
+
+4. **Difficulty presets system**
+   - Create/manage difficulty presets (location + time of day + base difficulty).
+   - Apply presets to repetitions for consistent environmental tagging.
+   - Ad-hoc difficulty entry for unplanned environments.
+   - Scientific comparison: same activity, different difficulty levels.
+
+5. **Repetition tracking per activity type**
+   - **Obedience**: success, rewarded, response time, progress distance.
+   - **LAT**: stimulus distance, intensity, sensitization, baseline restore time.
+   - **Desensitization**: stimulus distance, intensity, sensitization, baseline restore time.
+   - **Absence Exposure**: duration, intensity, vocalizations, sensitization, baseline restore time.
+   - **Boundary Setting**: intensity, response time.
+   - **Custom**: flexible metrics record + custom type name.
+
+6. **Learning UI**
+   - `LearningScreen`: unified session list with activity type badges (LAT, obedience, etc.), date, duration.
+   - `LearningSessionScreen`: create/edit session with dynamic activity list.
+   - Activity type selector → conditional repetition form fields.
+   - `CommunicationMethodPicker`: type + description per activity.
+   - `DifficultyFactorInput`: preset picker or ad-hoc entry per repetition.
+   - `GoalCatalogScreen`: browse/filter learning goals, create custom ones.
+   - `ExerciseCatalogScreen`: browse exercises by goal, create custom exercises.
+
+7. **Local persistence**
+   - SQLite tables: learning_goals, exercises, learning_sessions, session_activities, activity_repetitions, difficulty_presets.
+   - CRUD repository classes per entity.
+   - Migration scripts.
+
+8. **Unit and integration tests**
+   - Repository CRUD for all entities.
+   - Session lifecycle: create → add mixed activities → add repetitions → update → delete.
+   - Discriminated union validation: each activity type produces correct repetition shape.
+   - Difficulty preset application.
+   - Custom goal/exercise creation flow.
+
+### Exit Criteria
+
+- [ ] Learning sessions can be created with mixed activity types in a single session
+- [ ] Each activity type records its specific metrics correctly (obedience, LAT, desensitization, absence exposure, boundary setting, custom)
+- [ ] Difficulty presets can be created and applied to repetitions
+- [ ] Communication methods are configurable per activity
+- [ ] Learning goals and exercises catalogs are browsable with category filter
+- [ ] Custom goals, exercises, and activity types can be created
+- [ ] Sensitization and baseline restoration are tracked for education activities
+- [ ] Absence exposure sessions connect to the dog's SA profile
+- [ ] Test coverage >70%
+
+### Estimated Effort
+
+3-4 weeks for a single developer.
+
+---
+
+## Phase 9: Separation Anxiety Profile & Analytics
+
+**Goal**: Tie together monitoring and learning data into a unified separation anxiety profile. Enable period comparison, trend visualization, treatment response measurement, and prepare the data model for future ML predictions.
+
+**Dependencies**: Phase 2 (event logging), Phase 5 (anxiety scoring), Phase 8 (learning data).
+
+**Scope**: Mobile app + backend.
+
+**Note**: This phase replaces and expands the original Phase 6 (Long-Term Analytics) with the full product vision.
+
+### Deliverables
+
+1. **Separation anxiety profile**
+   - `SeparationAnxietyProfile` entity per dog: baseline index, behavior weights, session history.
+   - Baseline establishment from first 3-5 monitoring sessions.
+   - Custom behavior weight tuning per dog.
+
+2. **Anxiety index calculation**
+   - Composite index (0-100) per monitoring session.
+   - Weighted sum of detected behaviors normalized by session duration.
+   - Per-behavior contribution breakdown.
+   - Severity multipliers (mild=0.5, moderate=0.75, severe=1.0).
+   - Manual behavior modifiers (owner-reported on return).
+
+3. **Period comparison analytics**
+   - Select two time periods (e.g., "Week 1-2" vs "Week 5-6").
+   - Compute: average index, standard deviation, absolute change, relative change %.
+   - Per-behavior breakdown of changes.
+   - Trend classification: improving / worsening / stable.
+
+4. **Analytics UI**
+   - `AnxietyProfileScreen`: baseline info, current trend, behavior weight editor.
+   - `ComparisonScreen`: period picker, side-by-side stats, behavior breakdown.
+   - Trend line chart: anxiety index over time (daily/weekly/monthly aggregation).
+   - Per-behavior bar chart: frequency comparison between periods.
+
+5. **Post-session summary**
+   - Auto-generated after each monitoring session.
+   - Structured template: session duration, behaviors detected, anxiety index, comparison to baseline.
+   - Manual behavior checklist (owner confirms/denies automatic detections).
+   - "Compared to your baseline of 71, today's session scored 58. This is a 18% improvement."
+
+6. **Data export**
+   - Export session data as CSV or JSON.
+   - Export period comparison report.
+   - Share via system share sheet.
+
+### Exit Criteria
+
+- [ ] Separation anxiety profile is created per dog with baseline
+- [ ] Behavior weights are adjustable per dog
+- [ ] Period comparison shows correct statistical metrics
+- [ ] Trend charts render correctly
+- [ ] Post-session summary is informative and accurate
+- [ ] Manual behavior report modifies the session index
+- [ ] Data export produces valid CSV/JSON
+
+### Estimated Effort
+
+3-4 weeks for a single developer.
+
+---
+
+## Revised Phase Ordering
+
+With the expanded product vision, the recommended build order is:
+
+```
+Phase 0  — Project Scaffold              (complete)
+Phase 1  — Core Audio Monitoring         (monitoring foundation)
+Phase 2  — Bark Detection                (audio ML)
+Phase 3  — Camera Integration            (vision foundation)
+Phase 5  — Anxiety Detection             (multi-class + anxiety scoring)
+Phase 8  — Unified Learning System       (can start in parallel with Phase 1)
+Phase 9  — SA Profile & Analytics        (ties monitoring + learning together)
+Phase 4  — Live Streaming                (secondary — defer)
+Phase 7  — Remote Dashboard              (secondary — defer)
+```
+
+---
+
+## Future Considerations (Beyond Phase 9)
+
+- **Visual dog identification**: Differentiate individual dogs in the same household using facial recognition (dog facial landmarks) for multi-dog anxiety tracking.
+- **Emotion estimation**: Multimodal audio + vision model to estimate the dog's emotional state (calm, anxious, fearful, excited) beyond discrete behavior detection.
 - **iOS support**: Port the mobile app to iOS. Requires adapting foreground service pattern to iOS background modes, different camera/audio APIs, and Core ML for TFLite inference.
-- **Multiple dogs per household**: Detect and differentiate multiple dogs in the same household using audio fingerprinting or visual recognition.
 - **Two-way audio**: Enable speaking to the dog through the device speaker (requires speaker access and echo cancellation).
-- **Treat dispenser integration**: Hardware integration with auto treat dispensers, triggered when the dog is calm.
-- **Veterinary insights API**: Share behavior data with veterinarians through a secure API for remote behavioral health assessment.
-- **Home security integration**: Integrate with home security systems (alarm panel, smart locks) for coordinated response.
+- **Treat dispenser integration**: Hardware integration with auto treat dispensers, triggered when the dog is calm — closing the loop from detection to intervention.
+- **Veterinary insights API**: Share behavior data with veterinarians and ethologists through a secure API for remote behavioral health assessment and treatment planning.
+- **Multi-dog household support**: Distinguish and track multiple dogs, each with their own anxiety profile, in the same monitoring session.
+- **Predictive alerts**: ML-based prediction of anxiety escalation before it happens, enabling preemptive intervention.
