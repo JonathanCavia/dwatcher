@@ -25,7 +25,14 @@
         "POST_NOTIFICATIONS"
       ]
     },
-    "platforms": ["android"],
-    "plugins": ["expo-router"]
+    "platforms": [
+      "android"
+    ],
+    "plugins": [
+      "expo-router"
+    ],
+    "ios": {
+      "bundleIdentifier": "com.dwatcher.app"
+    }
   }
 }
