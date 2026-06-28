@@ -48,7 +48,7 @@ For the product vision, behavior catalog, and anxiety index definition, see [`do
 
 | Planned | Delivered | Notes |
 |---|---|---|
-| Foreground service + audio capture | ✅ Done | `expo-av@15.1.7` (última versión pre-56.x, AAR precompilado sin AnyTypeCache). Grabación WAV 16kHz mono con metering real + foreground service via `staysActiveInBackground`. |
+| Foreground service + audio capture | ✅ Done | `expo-audio@0.4.9` — SDK 54 official version. AudioRecorder with isMeteringEnabled for real dBFS metering, setAudioModeAsync(allowsRecording) for Android foreground service. Recording WAV 16kHz mono. |
 | Session lifecycle (SQLite via `expo-sqlite`) | ⚠️ Alternativo | `expo-sqlite@56.x` es incompatible con Expo 54. Reemplazado por JSON file storage via `expo-file-system`. |
 | MonitoringScreen con timer, audio meter, pause/resume/stop | ✅ Done | `MonitoringScreen.tsx` implementado con estado idle/monitoring/paused/ended |
 | AudioMeter component | ✅ Done | Barra animada con dBFS real del micrófono (verde/amarillo/rojo) |
@@ -67,14 +67,20 @@ Expo SDK 54 usa `expo-modules-core@3.0.30`. Los paquetes del ecosistema Expo con
 `expo-modules-core@56.x` **no se puede usar** como reemplazo porque tiene incompatibilidades con React Native 0.81.5 (el de Expo 54): errores de compilación C++ (`EventQueue::UpdateMode`) y Kotlin (`Promise.reject`).
 
 **Estrategia de mitigación aplicada:**
-- `AudioService` → **resuelto:** `expo-av@15.1.7` provee grabación real con foreground service (AAR precompilado, 0 referencias a AnyTypeCache)
+- `AudioService` → **resuelto:** `expo-audio@0.4.9` (versión oficial SDK 54, serie 0.x). `AudioRecorder` con `isMeteringEnabled` + `setAudioModeAsync(allowsRecording)` para foreground service. Sin dependencia de expo-modules-core 56.x.
 - `SessionRepository` → JSON via `expo-file-system` (`Paths.document`) — temporal hasta migrar a SQLite
-- Notificaciones → pendiente (expo-notifications 56.x sigue siendo incompatible)
-- Plugins nativos → `expo-router` + `expo-dev-client` + `expo-av`
+- Notificaciones → pendiente (expo-notifications solo existe en versión 56.x, incompatible con Expo 54)
+- Plugins nativos → `expo-router` + `expo-dev-client` (expo-audio@0.4.9 no requiere config plugin, se autolinkea via expo-modules-core)
+
+**Lección aprendida — versionado de paquetes Expo:**
+- Paquetes Expo serie `56.x` → compilados contra `expo-modules-core@56.x` (SDK 56), **no** compatibles con Expo 54
+- Paquetes Expo serie `0.x` → compilados contra `expo-modules-core@3.x` (SDK 54), **sí** compatibles
+- `npx expo install` puede resolver incorrectamente a `56.x` en un proyecto SDK 54 → siempre verificar la versión instalada
+- El `expo-audio` correcto para SDK 54 es `0.4.9`, documentado en https://docs.expo.dev/versions/v54.0.0/sdk/audio/
 
 **Path forward para SQLite y notificaciones:**
-1. Migrar a Expo SDK 56 cuando el equipo lo decida → restaura expo-sqlite y expo-notifications
-2. Alternativa: usar `react-native-sqlite-storage` (sin dependencia de expo-modules-core)
+1. `expo-sqlite` y `expo-notifications` solo existen en versión `56.x` → requieren migrar a Expo SDK 56
+2. Alternativa para SQLite: `react-native-sqlite-storage` o `op-sqlite` (sin dependencia de expo-modules-core)
 
 ### 🔄 In Progress
 
@@ -88,9 +94,10 @@ Expo SDK 54 usa `expo-modules-core@3.0.30`. Los paquetes del ecosistema Expo con
 |---|---|---|---|
 | 1 | Circular buffer + resampling PCM 16kHz | [T-AM-01](./roadmaps/technical/audio-monitoring.md#stage-t-am-01-captura-de-audio-y-buffer-circular) | — |
 | 1 | Post-session summary screen | [T-PM-03](./roadmaps/technical/passive-monitoring.md#stage-t-pm-03-cómputo-y-resumen-post-sesión) | — |
-| 2 | Migrar SessionRepository a SQLite | [T-DB-01](./roadmaps/technical/data-persistence.md) | expo-modules-core 3.x vs 56.x |
+| 2 | Migrar SessionRepository a SQLite | [T-DB-01](./roadmaps/technical/data-persistence.md) | expo-sqlite solo existe en 56.x |
 | 2 | Learning goals + exercise catalog UI | [U-LS-01](./roadmaps/user-facing/learning-system.md#stage-u-ls-01-crear-y-gestionar-objetivos-de-aprendizaje) | — |
-| 2 | Event timeline + local notifications | [T-PM-02](./roadmaps/technical/passive-monitoring.md#stage-t-pm-02-sistema-unificado-de-eventos-de-detección) | expo-notifications 56.x incompatible |
+| 2 | Event timeline + local notifications | [T-PM-02](./roadmaps/technical/passive-monitoring.md#stage-t-pm-02-sistema-unificado-de-eventos-de-detección) | expo-notifications solo existe en 56.x |
+| 3 | Backend REST API (sesiones, eventos) | [T-BE-01](./roadmaps/technical/backend-infrastructure.md) | — |
 
 ---
 
@@ -146,7 +153,7 @@ The following features are explicitly documented but **not prioritized** for the
 | **Veterinary insights API** | — | Requires backend infra + multi-user auth; far-future |
 | **Predictive alerts** | — | Requires large dataset of anxiety patterns before ML prediction is viable |
 | **Two-way audio** | — | Requires speaker access + echo cancellation; adds complexity without clear SA treatment benefit |
-| **Native audio capture (PCM)** | — | ✅ **Resuelto:** `expo-av@15.1.7` funciona con Expo 54. Ver [Phase 1](#-complete-phase-1--primera-sesión-de-monitoreo-2026-06-28) para detalles. |
+| **Native audio capture (PCM)** | — | ✅ **Resuelto:** `expo-audio@0.4.9` (versión oficial Expo SDK 54). Ver [Phase 1](#-complete-phase-1--primera-sesión-de-monitoreo-2026-06-28). |
 | **SQLite persistence** | [T-DB-01](./roadmaps/technical/data-persistence.md) | **Blocked by same expo-modules-core incompatibility.** expo-sqlite 56.x requires expo-modules-core 56.x. Currently using JSON file storage via expo-file-system as temporary replacement. Path forward: migrate to expo-sqlite when expo-modules-core incompatibility is resolved. |
 | **Local notifications** | [T-PM-02](./roadmaps/technical/passive-monitoring.md#stage-t-pm-02-sistema-unificado-de-eventos-de-detección) | **Blocked by same expo-modules-core incompatibility.** expo-notifications 56.x requires expo-modules-core 56.x. Local notifications are deferred until the incompatibility is resolved. |
 
