@@ -35,10 +35,12 @@ AGENT_MODEL_MAP = {
     "qa-scenarist": "opus",
     "summarize": "opus",
     "sync-verifier": "opus",
+    "test-writer": "opus",
+    "tdd-runner": "sonnet",  # starts as sonnet, can self-escalate
 }
 
 # Agents that perform WRITE operations (should use worktree isolation)
-WRITE_AGENTS = {"implement"}
+WRITE_AGENTS = {"implement", "test-writer", "tdd-runner"}
 
 # Agents that are READ-ONLY (must NOT use worktree — overhead waste)
 READ_ONLY_AGENTS = {"explore", "plan", "review", "qa-scenarist", "summarize", "sync-verifier"}
@@ -108,9 +110,9 @@ def validate(tool_input: dict) -> tuple[int, list[str]]:
             expected_model = metadata.get("model", "")
 
             if expected_model and model_used and model_used != expected_model:
-                # Allow but warn — the implement agent self-escalates
-                if subagent_type == "implement":
-                    messages.append(f"INFO: implement agent using '{model_used}' instead of default '{expected_model}' (self-escalation allowed)")
+                # Allow but warn — implement and tdd-runner agents self-escalate
+                if subagent_type in ("implement", "tdd-runner"):
+                    messages.append(f"INFO: {subagent_type} agent using '{model_used}' instead of default '{expected_model}' (self-escalation allowed)")
                 else:
                     messages.append(f"WARNING: '{subagent_type}' agent expects model '{expected_model}' but got '{model_used}'")
                     exit_code = max(exit_code, 2)
