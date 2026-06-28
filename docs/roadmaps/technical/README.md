@@ -2,6 +2,8 @@
 
 Technical roadmaps describe the engineering work required to build dwatcher. They decompose features into sequential stages, each with concrete tasks and verifiable tests.
 
+> **Source of truth:** [`docs/ROADMAP.md`](../../ROADMAP.md) defines the current project state, priorities, and what is intentionally deferred. These technical roadmaps are the detailed implementation plan — always consistent with ROADMAP.md.
+
 ## Index
 
 | Code | Roadmap | Description |

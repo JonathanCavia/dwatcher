@@ -2,6 +2,8 @@
 
 User-facing roadmaps describe the product from the user's perspective: what the user can do, see, and achieve with dwatcher. They decompose the user experience into sequential stages, each with concrete tasks and verifiable tests.
 
+> **Source of truth:** [`docs/ROADMAP.md`](../../ROADMAP.md) defines the current project state, priorities, and what is intentionally deferred. These user-facing roadmaps are the detailed product experience plan — always consistent with ROADMAP.md.
+
 ## Index
 
 | Code | Roadmap | Description |

@@ -7,6 +7,8 @@ This directory contains the structured roadmap documentation for the dwatcher pr
 | [`technical/`](./technical/) | Technical features, infrastructure, and implementation stages — what needs to be built and how |
 | [`user-facing/`](./user-facing/) | Product features from the user's perspective — what the user can do and experience |
 
+> **Source of truth:** [`docs/ROADMAP.md`](../ROADMAP.md) defines the current project state, development priorities, and intentionally deferred features. These roadmaps are the detailed breakdown — always consistent with ROADMAP.md.
+
 ## How Roadmaps Work
 
 Each roadmap document describes a feature or system decomposed into **stages**. Stages are numbered, sequential blocks of work. Each stage contains:

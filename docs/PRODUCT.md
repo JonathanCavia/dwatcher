@@ -19,41 +19,41 @@ La ansiedad por separación en perros afecta aproximadamente al 20-40% de los pe
 ## 2. Los Tres Pilares
 
 ```
-┌──────────────────────────────────────────────────────────────┐
-│                       dwatcher                                │
-│                                                               │
-│  ┌────────────────────┐  ┌───────────────────────────────┐   │
-│  │  Monitoreo Pasivo  │  │  Sistema de Aprendizaje       │   │
-│  │                    │  │  (LearningSession unificada)   │   │
-│  │  Grabar audio y    │  │                                │   │
-│  │  video desatendido │  │  ┌─────────────────────────┐  │   │
-│  │  • Ladridos        │  │  │ Actividades mezclables  │  │   │
-│  │  • Aullidos        │  │  │ (LAT → Obediencia → LAT)│  │   │
-│  │  • Pacing          │  │  │                          │  │   │
-│  │  • Zoomies         │  │  │ Training    │ Education  │  │   │
-│  │  • Postura ansiosa │  │  │ • Obediencia│ • LAT      │  │   │
+┌────────────────────────────────────────────────────────────────┐
+│                       dwatcher                                 │
+│                                                                │
+│  ┌────────────────────┐  ┌─────────────────────────────────┐   │
+│  │  Monitoreo Pasivo  │  │  Sistema de Aprendizaje         │   │
+│  │                    │  │  (LearningSession unificada)    │   │
+│  │  Grabar audio y    │  │                                 │   │
+│  │  video desatendido │  │  ┌───────────────────────────┐  │   │
+│  │  • Ladridos        │  │  │ Actividades mezclables    │  │   │
+│  │  • Aullidos        │  │  │ (LAT → Obediencia → LAT). │  │   │
+│  │  • Pacing          │  │  │                           │  │   │
+│  │  • Zoomies         │  │  │ Training     │ Education  │  │   │
+│  │  • Postura ansiosa │  │  │ • Obediencia │ • LAT      │  │   │
 │  │                    │  │  │              │ • Desensib.│  │   │
 │  │  ML on-device      │  │  │              │ • Ausencia │  │   │
 │  │  (YAMNet + TFLite) │  │  │              │ • Límites  │  │   │
 │  │                    │  │  │              │ • Custom   │  │   │
-│  └────────┬───────────┘  │  └─────────────────────────┘  │   │
-│           │              │                                │   │
-│           │              │  Dificultores por repetición   │   │
-│           │              │  • Presets (lugar + hora)      │   │
-│           │              │  • Nivel de dificultad (0-1)   │   │
-│           │              │  • Progreso por actividad      │   │
-│           └──────────────┤                                │   │
-│                          └────────────┬───────────────────┘   │
-│                                       │                       │
-│                                       ▼                       │
-│         ┌─────────────────────────────────────────┐          │
-│         │  Perfil de Ansiedad por Separación      │          │
-│         │  • Línea base  • Índice compuesto       │          │
-│         │  • Tendencias  • Comparación entre       │          │
-│         │    períodos      comportamientos         │          │
-│         │  • Pesos tuneables por comportamiento    │          │
-│         └─────────────────────────────────────────┘          │
-└──────────────────────────────────────────────────────────────┘
+│  └────────┬───────────┘  │  └───────────────────────────┘  │   │
+│           │              │                                 │   │
+│           │              │  Dificultores por repetición    │   │
+│           │              │  • Presets (lugar + hora)       │   │
+│           │              │  • Nivel de dificultad (0-1)    │   │
+│           │              │  • Progreso por actividad       │   │
+│           └──────────────┤                                 │   │
+│                          └────────────┬────────────────────┘   │
+│                                       │                        │
+│                                       ▼                        │
+│         ┌─────────────────────────────────────────┐            │
+│         │  Perfil de Ansiedad por Separación      │            │
+│         │  • Línea base  • Índice compuesto       │            │
+│         │  • Tendencias  • Comparación entre       │           │
+│         │    períodos      comportamientos         │           │
+│         │  • Pesos tuneables por comportamiento    │           │
+│         └─────────────────────────────────────────┘            │
+└────────────────────────────────────────────────────────────────┘
 ```
 
 ### Pilar 1: Monitoreo Pasivo
@@ -65,7 +65,7 @@ Al volver, finaliza la sesión y recibe un **resumen del comportamiento observad
 **Detecciones automáticas (on-device ML):**
 
 | Comportamiento | Canal | Tecnología |
-|---|---|---|
+|----------------|-------|------------|
 | Ladridos excesivos | Audio | YAMNet + TFLite |
 | Aullidos | Audio | YAMNet + TFLite |
 | Quejidos / lloriqueos | Audio | YAMNet + TFLite |
@@ -313,47 +313,61 @@ La app permite seleccionar dos períodos de tiempo y compararlos con métricas e
 
 ---
 
-## 7. Funcionalidades por Fase
+## 7. Capacidades del Producto
 
-### Fase A: Núcleo de Monitoreo (prioridad máxima)
+dwatcher se organiza en tres capacidades principales que cubren el ciclo completo: observar al perro cuando está solo, medir su ansiedad objetivamente, y entrenar para mejorarla.
 
-- [ ] Servicio foreground para grabación de audio desatendida
-- [ ] Detección de vocalizaciones (ladrido, aullido, quejido) vía YAMNet + TFLite
-- [ ] Persistencia local de eventos (SQLite)
-- [ ] Cálculo de índice de ansiedad por sesión
-- [ ] Establecimiento de línea base (3-5 sesiones)
-- [ ] Resumen post-sesión
+### Monitoreo Pasivo
 
-### Fase B: Visión y Movimiento
+El núcleo técnico del producto. El dueño configura una sesión, deja el teléfono grabando, y al volver recibe un resumen cuantitativo del comportamiento de su perro durante su ausencia.
 
-- [ ] Cámara: snapshots en detecciones, video por disparo de movimiento
-- [ ] Pose estimation para detección de pacing y zoomies
-- [ ] Object detection para detección de perro en muebles
-- [ ] Reportes manuales de comportamientos no detectables
+**Detección automática de comportamientos:**
+- Vocalizaciones: ladridos, aullidos, quejidos — vía YAMNet + TFLite on-device
+- Movimiento: pacing, zoomies — vía pose estimation y análisis de movimiento
+- Postura: temblor, postura ansiosa, perro en muebles — vía object detection + pose estimation
+- Contexto emocional: distinción entre juego y ansiedad — vía fusión multimodal audio + video
 
-### Fase C: Adiestramiento y Educación
+**Reportes manuales (el dueño al volver):** micción inadecuada, defecación inadecuada, destrucción de objetos — comportamientos que requieren juicio humano.
 
-- [ ] Registro de sesiones de adiestramiento (tipo, ejercicios, métricas)
-- [ ] Registro de sesiones de educación (LAT, exposición a la ausencia, desensibilización)
-- [ ] Catálogo de habilidades y ejercicios (predefinidos + custom)
-- [ ] Medios de comunicación por ejercicio
-- [ ] Seguimiento de umbrales y baseline en ejercicios de educación
+**Resumen post-sesión:** índice de ansiedad (0-100), breakdown por comportamiento, comparación contra línea base.
 
-### Fase D: Analíticas Avanzadas
+> Implementación detallada: [`U-MON`](./roadmaps/user-facing/monitoring-experience.md) · Tech: [`T-PM`](./roadmaps/technical/passive-monitoring.md), [`T-AM`](./roadmaps/technical/audio-monitoring.md), [`T-VM`](./roadmaps/technical/video-monitoring.md)
 
-- [ ] Comparación entre períodos con métricas estadísticas
-- [ ] Gráficos de tendencia (diario, semanal, mensual)
-- [ ] Desglose por comportamiento
-- [ ] Pesos de comportamientos ajustables por perro
-- [ ] Exportación de datos (CSV/JSON)
+### Sistema de Aprendizaje Unificado
 
-### Fase E: Expansión (futuro)
+Adiestramiento (training) y educación (education) comparten un mismo modelo de datos — `LearningSession`. Una sesión puede mezclar actividades de cualquier tipo libremente (ej: LAT → Obediencia → LAT → Desensibilización).
 
-- [ ] Streaming en vivo (WebRTC) — funcionalidad secundaria
-- [ ] Identificación visual de perro (para hogares multi-perro)
-- [ ] Estimación de emoción canina (modelo multimodal audio + visión)
-- [ ] Dashboard web para veterinarios / etólogos
-- [ ] Notificaciones push en tiempo real
+**Capacidades del sistema:**
+- Catálogo de objetivos de aprendizaje (predefinidos + custom), filtrable por categoría
+- Sesiones con actividades mezclables, cada una con sus métricas específicas
+- Seguimiento de repeticiones con métricas por tipo: distancia, intensidad, tiempo de respuesta, umbrales
+- Sistema de dificultad por ambiente: presets de lugar + hora para comparación científica
+- Medios de comunicación registrables por actividad (verbal, físico, silbato, facial)
+- Progreso visualizado: evolución de la variable clave de cada actividad en el tiempo
+- Integración con perfil de ansiedad: correlación entre entrenamiento y resultados de monitoreo
+
+**Tipos de actividad soportados:** obedience, LAT, desensitization, absence_exposure, boundary_setting, custom — extensible sin cambiar el modelo de sesión.
+
+> Implementación detallada: [`U-LS`](./roadmaps/user-facing/learning-system.md) · Tech: [`T-DB`](./roadmaps/technical/data-persistence.md)
+
+### Perfil de Ansiedad por Separación
+
+La capa de medición objetiva que une monitoreo y aprendizaje. Le da al dueño y al veterinario datos en lugar de impresiones.
+
+**Capacidades del perfil:**
+- Línea base automática: establecida en las primeras 3-5 sesiones de monitoreo
+- Índice de ansiedad compuesto (0-100): ponderado por comportamiento, normalizado por duración
+- Pesos de comportamiento tuneables por perro — cada perro expresa la ansiedad de forma distinta
+- Comparación entre períodos con métricas estadísticas (promedio, std dev, cambio absoluto y relativo)
+- Gráficos de tendencia (diario, semanal, mensual) con línea base de referencia
+- Breakdown por comportamiento: qué cambió más y en qué dirección
+- Exportación de datos (CSV/JSON) y reporte para veterinario
+
+> Implementación detallada: [`U-AP`](./roadmaps/user-facing/anxiety-profile.md) · Tech: [`T-PM-03`](./roadmaps/technical/passive-monitoring.md#stage-t-pm-03-cómputo-y-resumen-post-sesión)
+
+### Qué no está en esta etapa
+
+El live streaming (WebRTC) y el dashboard web remoto están **intencionalmente fuera del alcance actual**. Son funcionalidades secundarias que no contribuyen directamente a la misión central de medir la respuesta al tratamiento de ansiedad por separación. Están documentadas como deferred en [`ROADMAP.md`](./ROADMAP.md#intentionally-deferred) y como stages futuros en [`T-BE`](./roadmaps/technical/backend-infrastructure.md).
 
 ---
 
@@ -361,7 +375,7 @@ La app permite seleccionar dos períodos de tiempo y compararlos con métricas e
 
 ### Supuestos
 
-1. **Un perro por hogar** como punto de partida. El sistema asume que hay un solo perro frente a la cámara. La diferenciación multi-perro es una fase futura.
+1. **Un perro por hogar** como punto de partida. El sistema asume que hay un solo perro frente a la cámara. La diferenciación multi-perro está documentada como etapa futura en [`T-PM-05`](./roadmaps/technical/passive-monitoring.md#stage-t-pm-05-identificación-y-diferenciación-canina) y listada como deferred en [`ROADMAP.md`](./ROADMAP.md#intentionally-deferred).
 2. **Teléfono enchufado** durante sesiones de monitoreo. El modo desatendido consume batería; se recomienda tener el cargador conectado.
 3. **Teléfono fijo** apuntando al área donde el perro pasa la mayor parte del tiempo cuando está solo.
 4. **Detección consistente > exhaustiva**. Priorizamos precisión en los comportamientos más detectables sobre cobertura de todos los comportamientos posibles.
