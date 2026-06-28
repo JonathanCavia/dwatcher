@@ -8,7 +8,9 @@
     "format:write": "prettier --write .",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
-    "clean": "find . -name 'node_modules' -type d -prune -exec rm -rf {} + && find . -name '.turbo' -type d -prune -exec rm -rf {} +"
+    "clean": "find . -name 'node_modules' -type d -prune -exec rm -rf {} + && find . -name '.turbo' -type d -prune -exec rm -rf {} +",
+    "android": "pnpm --filter @dwatcher/mobile expo run:android",
+    "ios": "pnpm --filter @dwatcher/mobile expo run:ios"
   },
   "engines": {
     "node": "24.15.0",
@@ -17,20 +19,20 @@
   "packageManager": "pnpm@9.1.0",
   "pnpm": {
     "overrides": {
-      "metro": "~0.83.0",
-      "metro-core": "~0.83.0",
-      "metro-config": "~0.83.0",
-      "metro-resolver": "~0.83.0",
-      "metro-runtime": "~0.83.0",
-      "metro-babel-transformer": "~0.83.0",
-      "metro-cache": "~0.83.0",
-      "metro-cache-key": "~0.83.0",
-      "metro-file-map": "~0.83.0",
-      "metro-minify-terser": "~0.83.0",
-      "metro-source-map": "~0.83.0",
-      "metro-symbolicate": "~0.83.0",
-      "metro-transform-plugins": "~0.83.0",
-      "metro-transform-worker": "~0.83.0"
+      "metro": "0.83.3",
+      "metro-core": "0.83.3",
+      "metro-config": "0.83.3",
+      "metro-resolver": "0.83.3",
+      "metro-runtime": "0.83.3",
+      "metro-babel-transformer": "0.83.3",
+      "metro-cache": "0.83.3",
+      "metro-cache-key": "0.83.3",
+      "metro-file-map": "0.83.3",
+      "metro-minify-terser": "0.83.3",
+      "metro-source-map": "0.83.3",
+      "metro-symbolicate": "0.83.3",
+      "metro-transform-plugins": "0.83.3",
+      "metro-transform-worker": "0.83.3"
     },
     "packageExtensions": {
       "@expo/cli": {
