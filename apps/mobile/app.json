@@ -32,8 +32,7 @@
     ],
     "plugins": [
       "expo-router",
-      "expo-dev-client",
-      "expo-av"
+      "expo-dev-client"
     ],
     "ios": {
       "bundleIdentifier": "com.dwatcher.app"
