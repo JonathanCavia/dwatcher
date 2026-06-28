@@ -49,9 +49,9 @@ La ansiedad por separación en perros afecta aproximadamente al 20-40% de los pe
 │         ┌─────────────────────────────────────────┐            │
 │         │  Perfil de Ansiedad por Separación      │            │
 │         │  • Línea base  • Índice compuesto       │            │
-│         │  • Tendencias  • Comparación entre       │           │
-│         │    períodos      comportamientos         │           │
-│         │  • Pesos tuneables por comportamiento    │           │
+│         │  • Tendencias  • Comparación entre      │            │
+│         │    períodos      comportamientos        │            │
+│         │  • Pesos tuneables por comportamiento   │            │
 │         └─────────────────────────────────────────┘            │
 └────────────────────────────────────────────────────────────────┘
 ```
@@ -255,17 +255,17 @@ La app permite seleccionar dos períodos de tiempo y compararlos con métricas e
 
 ```
 ┌────────────────────────────────────────────────────────────┐
-│  Período A: Semanas 1-2    │  Período B: Semanas 5-6      │
+│  Período A: Semanas 1-2    │  Período B: Semanas 5-6       │
 │  (Pre-tratamiento)         │  (Post-tratamiento)           │
-│                             │                               │
-│  Promedio:    71 /100      │  Promedio:    45 /100  ↓36%  │
+│                             │                              │
+│  Promedio:    71 /100      │  Promedio:    45 /100  ↓36%   │
 │  Std Dev:     ±8           │  Std Dev:     ±6              │
 │  Sesiones:    5            │  Sesiones:    5               │
-│                             │                               │
-│  ████████████████          │  ██████████                  │
-│                             │                               │
-│  Tendencia: MEJORANDO ✅    │                               │
-│                             │                               │
+│                             │                              │
+│  ████████████████          │  ██████████                   │
+│                             │                              │
+│  Tendencia: MEJORANDO ✅    │                              │
+│                             │                              │
 │  Comportamientos que más bajaron:                          │
 │  • Aullidos:       -62%                                    │
 │  • Ladridos:       -41%                                    │
@@ -278,7 +278,7 @@ La app permite seleccionar dos períodos de tiempo y compararlos con métricas e
 ## 6. Ciclo de Uso Típico
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
+┌──────────────────────────────────────────────────────────────────────┐
 │                        CICLO DE USO                                  │
 │                                                                      │
 │  1. CONFIGURACIÓN INICIAL                                            │
@@ -286,7 +286,7 @@ La app permite seleccionar dos períodos de tiempo y compararlos con métricas e
 │     • Revisar catálogo de comportamientos (pesos default)            │
 │     • Opcional: ajustar pesos según el perfil de síntomas del perro  │
 │                                                                      │
-│  2. ESTABLECER LÍNEA BASE                                           │
+│  2. ESTABLECER LÍNEA BASE                                            │
 │     • 3-5 sesiones de monitoreo sin intervención                     │
 │     • La app calcula el índice de ansiedad base automáticamente      │
 │                                                                      │
@@ -308,7 +308,7 @@ La app permite seleccionar dos períodos de tiempo y compararlos con métricas e
 │  6. ITERACIÓN                                                        │
 │     • El ciclo se repite: monitoreo → evaluación → ajuste            │
 │     • A largo plazo, la tendencia muestra si el tratamiento funciona │
-└─────────────────────────────────────────────────────────────────────┘
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
 ---

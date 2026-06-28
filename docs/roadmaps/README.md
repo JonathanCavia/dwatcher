@@ -97,4 +97,4 @@ Tests are listed per task and tagged:
 
 - [Product Vision](../PRODUCT.md) — What dwatcher is and why it exists
 - [Architecture](../ARCHITECTURE.md) — System design and data flow
-- [Original Roadmap](../ROADMAP.md) — Phase-based development plan (broader strokes)
+- [Project Roadmap](../ROADMAP.md) — Source of truth: current state, priorities, and deferred features
