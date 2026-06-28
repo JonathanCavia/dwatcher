@@ -1,13 +1,14 @@
 import 'react-native-gesture-handler';
 
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
 import { getQueryClient, QueryClientProvider } from '../src/services/query-client';
+import { useSessionStore } from '../src/stores/session-store';
 import { colors } from '../src/theme';
 
 const queryClient = getQueryClient();
@@ -17,25 +18,42 @@ SplashScreen.preventAutoHideAsync().catch(() => {
   // Silently ignore — splash may already be hidden
 });
 
+function SessionRehydrator({ ready }: { ready: boolean }) {
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!ready) return;
+
+    // Hydrate any active session from the database
+    const store = useSessionStore.getState();
+    if (!store.isInitialized) {
+      store.initialize();
+    }
+
+    const { currentSession, sessionState } = useSessionStore.getState();
+    if (
+      currentSession &&
+      (sessionState === 'monitoring' || sessionState === 'paused')
+    ) {
+      // If there's an active session from a previous launch, show the
+      // monitoring screen. Audio won't auto-resume, but the user can
+      // tap Resume to restart the foreground service.
+      router.replace('/monitoring');
+    }
+  }, [ready, router]);
+
+  return null;
+}
+
 export default function RootLayout() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    // Hide the native splash screen once the React tree is mounted
     async function hideSplash() {
       await SplashScreen.hideAsync();
     }
     hideSplash().catch(() => {});
     setReady(true);
-  }, []);
-
-  const onErrorReset = useCallback(() => {
-    setReady(false);
-    // Re-hide splash after a brief moment to let the tree remount
-    requestAnimationFrame(() => {
-      SplashScreen.hideAsync().catch(() => {});
-      setReady(true);
-    });
   }, []);
 
   if (!ready) {
@@ -47,6 +65,7 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <StatusBar style="light" />
         <ErrorBoundary>
+          <SessionRehydrator ready={ready} />
           <Stack
             screenOptions={{
               contentStyle: { backgroundColor: colors.background },
@@ -54,6 +73,7 @@ export default function RootLayout() {
             }}
           >
             <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="monitoring" options={{ headerShown: false }} />
           </Stack>
         </ErrorBoundary>
       </SafeAreaProvider>

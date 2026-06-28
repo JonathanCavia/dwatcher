@@ -30,7 +30,10 @@
     ],
     "plugins": [
       "expo-router",
-      "expo-dev-client"
+      "expo-dev-client",
+      "@siteed/audio-studio",
+      "expo-sqlite",
+      "expo-notifications"
     ],
     "ios": {
       "bundleIdentifier": "com.dwatcher.app"
