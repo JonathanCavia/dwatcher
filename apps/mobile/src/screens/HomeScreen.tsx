@@ -1,9 +1,9 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { ScreenShell } from '../../src/components/layout/ScreenShell';
-import { PrimaryButton } from '../../src/components/ui/PrimaryButton';
-import { GhostButton } from '../../src/components/ui/GhostButton';
-import { colors, dwatcherTypography } from '../../src/theme';
+import { ScreenShell } from '../components/layout/ScreenShell';
+import { PrimaryButton } from '../components/ui/PrimaryButton';
+import { GhostButton } from '../components/ui/GhostButton';
+import { colors, dwatcherTypography } from '../theme';
 
 export function HomeScreen() {
   return (

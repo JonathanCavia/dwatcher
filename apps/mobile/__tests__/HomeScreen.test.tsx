@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react-native';
 import React from 'react';
 
-import { HomeScreen } from '../app/screens/HomeScreen';
+import { HomeScreen } from '../src/screens/HomeScreen';
 
 // Mock ScreenShell and button components to avoid full dependency tree
 jest.mock('../src/components/layout/ScreenShell', () => ({
