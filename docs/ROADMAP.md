@@ -48,10 +48,10 @@ For the product vision, behavior catalog, and anxiety index definition, see [`do
 
 | Planned | Delivered | Notes |
 |---|---|---|
-| Foreground service + audio capture (`@siteed/expo-audio-studio`) | ⚠️ Stub | **Bloqueado por incompatibilidad de versiones** (ver abajo). AudioService usa metering simulado. |
+| Foreground service + audio capture | ✅ Done | `expo-av@15.1.7` (última versión pre-56.x, AAR precompilado sin AnyTypeCache). Grabación WAV 16kHz mono con metering real + foreground service via `staysActiveInBackground`. |
 | Session lifecycle (SQLite via `expo-sqlite`) | ⚠️ Alternativo | `expo-sqlite@56.x` es incompatible con Expo 54. Reemplazado por JSON file storage via `expo-file-system`. |
 | MonitoringScreen con timer, audio meter, pause/resume/stop | ✅ Done | `MonitoringScreen.tsx` implementado con estado idle/monitoring/paused/ended |
-| AudioMeter component | ✅ Done | Barra animada con dBFS simulado (verde/amarillo/rojo) |
+| AudioMeter component | ✅ Done | Barra animada con dBFS real del micrófono (verde/amarillo/rojo) |
 | Zustand stores (session + audio) | ✅ Done | `session-store.ts` y `audio-store.ts` implementados |
 | Session state machine | ✅ Done | `session-machine.ts` con transiciones validadas |
 | HomeScreen "Start Monitoring" | ✅ Done | Botón funcional, navega a `/monitoring` |
@@ -67,15 +67,14 @@ Expo SDK 54 usa `expo-modules-core@3.0.30`. Los paquetes del ecosistema Expo con
 `expo-modules-core@56.x` **no se puede usar** como reemplazo porque tiene incompatibilidades con React Native 0.81.5 (el de Expo 54): errores de compilación C++ (`EventQueue::UpdateMode`) y Kotlin (`Promise.reject`).
 
 **Estrategia de mitigación aplicada:**
-- `AudioService` → stub con metering simulado (sin dependencia nativa)
-- `SessionRepository` → JSON via `expo-file-system` (`Paths.document`)
-- Notificaciones → removidas (no necesarias sin servicio foreground real)
-- Plugins nativos → solo `expo-router` + `expo-dev-client`
+- `AudioService` → **resuelto:** `expo-av@15.1.7` provee grabación real con foreground service (AAR precompilado, 0 referencias a AnyTypeCache)
+- `SessionRepository` → JSON via `expo-file-system` (`Paths.document`) — temporal hasta migrar a SQLite
+- Notificaciones → pendiente (expo-notifications 56.x sigue siendo incompatible)
+- Plugins nativos → `expo-router` + `expo-dev-client` + `expo-av`
 
-**Path forward para desbloquear:**
-1. Esperar a que Expo SDK 56 sea estable → migrar todo el proyecto (recomendado a largo plazo)
-2. Escribir un módulo nativo delgado para grabación PCM (evita dependencias del ecosistema)
-3. Usar `expo-av@15.1.7` (última version pre-56.x) — requiere testear compatibilidad
+**Path forward para SQLite y notificaciones:**
+1. Migrar a Expo SDK 56 cuando el equipo lo decida → restaura expo-sqlite y expo-notifications
+2. Alternativa: usar `react-native-sqlite-storage` (sin dependencia de expo-modules-core)
 
 ### 🔄 In Progress
 
@@ -87,11 +86,11 @@ Expo SDK 54 usa `expo-modules-core@3.0.30`. Los paquetes del ecosistema Expo con
 
 | Priority | Area | Roadmap | Blocker |
 |---|---|---|---|
-| 1 | Audio real (captura PCM + buffer circular) | [T-AM-01](./roadmaps/technical/audio-monitoring.md#stage-t-am-01-captura-de-audio-y-buffer-circular) | expo-modules-core 3.x vs 56.x |
-| 1 | Servicio foreground Android | [T-PM-01](./roadmaps/technical/passive-monitoring.md#stage-t-pm-01-servicio-foreground-y-ciclo-de-vida-de-sesión) | expo-modules-core 3.x vs 56.x |
+| 1 | Circular buffer + resampling PCM 16kHz | [T-AM-01](./roadmaps/technical/audio-monitoring.md#stage-t-am-01-captura-de-audio-y-buffer-circular) | — |
+| 1 | Post-session summary screen | [T-PM-03](./roadmaps/technical/passive-monitoring.md#stage-t-pm-03-cómputo-y-resumen-post-sesión) | — |
 | 2 | Migrar SessionRepository a SQLite | [T-DB-01](./roadmaps/technical/data-persistence.md) | expo-modules-core 3.x vs 56.x |
 | 2 | Learning goals + exercise catalog UI | [U-LS-01](./roadmaps/user-facing/learning-system.md#stage-u-ls-01-crear-y-gestionar-objetivos-de-aprendizaje) | — |
-| 2 | Event timeline + local notifications | [T-PM-02](./roadmaps/technical/passive-monitoring.md#stage-t-pm-02-sistema-unificado-de-eventos-de-detección) | — |
+| 2 | Event timeline + local notifications | [T-PM-02](./roadmaps/technical/passive-monitoring.md#stage-t-pm-02-sistema-unificado-de-eventos-de-detección) | expo-notifications 56.x incompatible |
 
 ---
 
@@ -147,7 +146,7 @@ The following features are explicitly documented but **not prioritized** for the
 | **Veterinary insights API** | — | Requires backend infra + multi-user auth; far-future |
 | **Predictive alerts** | — | Requires large dataset of anxiety patterns before ML prediction is viable |
 | **Two-way audio** | — | Requires speaker access + echo cancellation; adds complexity without clear SA treatment benefit |
-| **Native audio capture (PCM)** | [T-AM-01](./roadmaps/technical/audio-monitoring.md#stage-t-am-01-captura-de-audio-y-buffer-circular) | **Blocked by expo-modules-core 3.x vs 56.x incompatibility.** All Expo audio packages (expo-av 16.x, expo-audio 56.x) require expo-modules-core 56.x which is incompatible with Expo 54's React Native 0.81.5. Currently using stub AudioService with simulated metering. Resolution: migrate to Expo SDK 56 when stable, or build thin native module. |
+| **Native audio capture (PCM)** | — | ✅ **Resuelto:** `expo-av@15.1.7` funciona con Expo 54. Ver [Phase 1](#-complete-phase-1--primera-sesión-de-monitoreo-2026-06-28) para detalles. |
 | **SQLite persistence** | [T-DB-01](./roadmaps/technical/data-persistence.md) | **Blocked by same expo-modules-core incompatibility.** expo-sqlite 56.x requires expo-modules-core 56.x. Currently using JSON file storage via expo-file-system as temporary replacement. Path forward: migrate to expo-sqlite when expo-modules-core incompatibility is resolved. |
 | **Local notifications** | [T-PM-02](./roadmaps/technical/passive-monitoring.md#stage-t-pm-02-sistema-unificado-de-eventos-de-detección) | **Blocked by same expo-modules-core incompatibility.** expo-notifications 56.x requires expo-modules-core 56.x. Local notifications are deferred until the incompatibility is resolved. |
 
