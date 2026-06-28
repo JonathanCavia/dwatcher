@@ -9,6 +9,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
+      "image": "./assets/icon.png",
       "backgroundColor": "#1a1a2e"
     },
     "android": {
@@ -21,6 +22,7 @@
         "RECORD_AUDIO",
         "CAMERA",
         "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_MICROPHONE",
         "FOREGROUND_SERVICE_MEDIA_PLAYBACK",
         "POST_NOTIFICATIONS"
       ]
@@ -30,10 +32,7 @@
     ],
     "plugins": [
       "expo-router",
-      "expo-dev-client",
-      "@siteed/audio-studio",
-      "expo-sqlite",
-      "expo-notifications"
+      "expo-dev-client"
     ],
     "ios": {
       "bundleIdentifier": "com.dwatcher.app"
