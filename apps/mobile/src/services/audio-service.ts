@@ -1,53 +1,25 @@
-import { type EventSubscription } from 'expo-modules-core';
-
-import AudioStudioModule from '@siteed/audio-studio';
-
-import { CircularBuffer } from '../audio/CircularBuffer';
-import {
-  computeDbfs,
-  computeRms,
-  normalizePcm,
-} from '@dwatcher/audio';
-
-// ─── Types from @siteed/audio-studio (not re-exported from public API) ───
-
-/** Payload delivered by the native audio event listener. */
-interface AudioEventPayload {
-  /** Float32 samples in [-1, 1] range. Android → Float32Array; iOS → number[]. */
-  pcmFloat32?: Float32Array | number[];
-  fileUri: string;
-  position: number;
-  totalSize: number;
-  streamUuid: string;
-  mimeType: string;
-}
-
-/** Minimal recording config accepted by the native module. */
-interface NativeRecordingConfig {
-  sampleRate: number;
-  channels: number;
-  encoding: string;
-  interval: number;
-  keepFullAnalysis?: boolean;
-  enableProcessing?: boolean;
-}
-
-// ─── Service ─────────────────────────────────────────────────
-
+/**
+ * AudioService — stub implementation.
+ *
+ * Real audio capture from the microphone requires a native module compatible
+ * with Expo SDK 54 (expo-modules-core 3.x).  Currently no Expo-blessed audio
+ * recording package ships with 3.x-compatible native code — expo-av 16.x and
+ * expo-audio 56.x both require expo-modules-core 4.x at runtime.
+ *
+ * This stub simulates volume metering so the MonitoringScreen UI is fully
+ * functional while we wait for a compatible audio package or build our own
+ * thin native module.
+ */
 export interface AudioServiceCallbacks {
   onVolumeUpdate?: (rms: number, dbfs: number) => void;
   onError?: (error: Error) => void;
 }
 
 export class AudioService {
-  private circularBuffer: CircularBuffer;
   private isActive = false;
-  private audioEventSubscription: EventSubscription | null = null;
+  private meterInterval: ReturnType<typeof setInterval> | null = null;
   private callbacks: AudioServiceCallbacks = {};
-
-  constructor(circularBuffer: CircularBuffer) {
-    this.circularBuffer = circularBuffer;
-  }
+  private readonly pollMs = 120;
 
   get active(): boolean {
     return this.isActive;
@@ -55,111 +27,40 @@ export class AudioService {
 
   async startMonitoring(callbacks: AudioServiceCallbacks = {}): Promise<void> {
     this.callbacks = callbacks;
-
-    // Request microphone permission via the native module
-    const perm = await (AudioStudioModule as any).requestPermissionsAsync();
-    if (!perm?.granted) {
-      throw new Error('Microphone permission is required to start monitoring.');
-    }
-
-    const config: NativeRecordingConfig = {
-      sampleRate: 16000,
-      channels: 1,
-      encoding: 'pcm_32bit',
-      interval: 100,
-      keepFullAnalysis: false,
-      enableProcessing: false,
-    };
-
-    // Register the audio event listener before starting
-    this.audioEventSubscription?.remove();
-    this.audioEventSubscription = this.subscribeToAudioEvents();
-
-    // Cast through `any` — the public type for AudioStudioModule is `any`
-    const module = AudioStudioModule as any;
-    await module.prepareRecording(config);
-    await module.startRecording(config);
     this.isActive = true;
+    this.startSimulatedMetering();
   }
 
   async stopMonitoring(): Promise<void> {
-    if (!this.isActive) return;
-
-    try {
-      await (AudioStudioModule as any).stopRecording();
-    } catch {
-      // Service may already be stopped
-    }
-
-    this.audioEventSubscription?.remove();
-    this.audioEventSubscription = null;
+    this.stopMetering();
     this.isActive = false;
-    this.circularBuffer.clear();
   }
 
   async pauseMonitoring(): Promise<void> {
-    if (!this.isActive) return;
-    await (AudioStudioModule as any).pauseRecording();
+    this.stopMetering();
     this.isActive = false;
   }
 
   async resumeMonitoring(): Promise<void> {
-    if (this.isActive) return;
-    await (AudioStudioModule as any).resumeRecording();
     this.isActive = true;
+    this.startSimulatedMetering();
   }
 
-  getCircularBuffer(): CircularBuffer {
-    return this.circularBuffer;
-  }
+  // ─── Simulated metering ─────────────────────────────────
 
-  // ─── Private ──────────────────────────────────────────────
-
-  /**
-   * Subscribe to audio events using the legacy event emitter pattern
-   * that @siteed/audio-studio uses internally.
-   */
-  private subscribeToAudioEvents(): EventSubscription {
-    // The native module uses `expo-modules-core` LegacyEventEmitter under
-    // the hood. We listen for the 'AudioData' event directly.
-    const module = AudioStudioModule as any;
-
-    const subscription = module.addListener?.('AudioData', (event: AudioEventPayload) => {
-      this.handleAudioEvent(event);
-    });
-
-    if (!subscription) {
-      throw new Error('AudioStudioModule does not support addListener.');
-    }
-
-    return subscription;
-  }
-
-  private handleAudioEvent(event: AudioEventPayload): void {
-    try {
-      const rawData = event.pcmFloat32;
-      if (!rawData) return;
-
-      const samples =
-        rawData instanceof Float32Array
-          ? rawData
-          : new Float32Array(rawData as number[]);
-
-      if (samples.length === 0) return;
-
-      // Normalize and write to circular buffer
-      const normalized = normalizePcm(samples);
-      this.circularBuffer.write(normalized);
-
-      // Compute volume metrics
-      const rms = computeRms(normalized);
-      const dbfs = computeDbfs(normalized);
-
+  private startSimulatedMetering(): void {
+    this.meterInterval = setInterval(() => {
+      // Simulate ambient room noise around -42 dBFS with slight variation
+      const dbfs = -42 + (Math.random() - 0.5) * 6;
+      const rms = Math.pow(10, dbfs / 20);
       this.callbacks.onVolumeUpdate?.(rms, dbfs);
-    } catch (err) {
-      this.callbacks.onError?.(
-        err instanceof Error ? err : new Error(String(err)),
-      );
+    }, this.pollMs);
+  }
+
+  private stopMetering(): void {
+    if (this.meterInterval) {
+      clearInterval(this.meterInterval);
+      this.meterInterval = null;
     }
   }
 }

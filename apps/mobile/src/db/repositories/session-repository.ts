@@ -1,23 +1,7 @@
 import { type Session, SessionState } from '@dwatcher/types';
+import { Paths, File as ExpoFile } from 'expo-file-system';
 
-import { getDatabase } from '../init';
-
-function generateId(): string {
-  // Simple UUID v4 generation using available APIs
-  const bytes = new Uint8Array(16);
-  for (let i = 0; i < 16; i++) {
-    bytes[i] = Math.floor(Math.random() * 256);
-  }
-  // Set version 4
-  bytes[6] = (bytes[6] & 0x0f) | 0x40;
-  // Set variant
-  bytes[8] = (bytes[8] & 0x3f) | 0x80;
-
-  const hex = Array.from(bytes)
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
-  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`;
-}
+const SESSIONS_FILENAME = 'sessions.json';
 
 interface SessionRow {
   id: string;
@@ -26,8 +10,6 @@ interface SessionRow {
   ended_at: string | null;
   state: string;
   device_battery_level: number;
-  created_at: string;
-  updated_at: string;
 }
 
 function rowToSession(row: SessionRow): Session {
@@ -41,99 +23,86 @@ function rowToSession(row: SessionRow): Session {
   };
 }
 
+function generateId(): string {
+  return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+}
+
+function sessionsFile(): ExpoFile {
+  return new ExpoFile(Paths.document, SESSIONS_FILENAME);
+}
+
+async function readAll(): Promise<SessionRow[]> {
+  try {
+    const file = sessionsFile();
+    const buffer = await file.arrayBuffer();
+    const text = new TextDecoder().decode(buffer);
+    return text ? JSON.parse(text) : [];
+  } catch {
+    return [];
+  }
+}
+
+async function writeAll(rows: SessionRow[]): Promise<void> {
+  const file = sessionsFile();
+  const stream = file.writableStream();
+  const writer = stream.getWriter();
+  const encoded = new TextEncoder().encode(JSON.stringify(rows));
+  await writer.write(encoded);
+  await writer.close();
+}
+
 export class SessionRepository {
-  /**
-   * Create a new monitoring session and return the Session entity.
-   */
-  createSession(dogId: string, batteryLevel: number): Session {
-    const db = getDatabase();
-    const id = generateId();
+  async createSession(dogId: string, batteryLevel: number): Promise<Session> {
+    const rows = await readAll();
     const now = new Date().toISOString();
-
-    db.runSync(
-      `INSERT INTO sessions (id, dog_id, started_at, state, device_battery_level)
-       VALUES (?, ?, ?, ?, ?)`,
-      id,
-      dogId,
-      now,
-      SessionState.Monitoring,
-      batteryLevel,
-    );
-
-    return {
-      id,
-      dogId,
-      startedAt: now,
-      endedAt: null,
+    const row: SessionRow = {
+      id: generateId(),
+      dog_id: dogId,
+      started_at: now,
+      ended_at: null,
       state: SessionState.Monitoring,
-      deviceBatteryLevel: batteryLevel,
+      device_battery_level: batteryLevel,
     };
+    rows.push(row);
+    await writeAll(rows);
+    return rowToSession(row);
   }
 
-  /**
-   * Retrieve a session by its ID.
-   */
-  getSession(id: string): Session | null {
-    const db = getDatabase();
-    const row = db.getFirstSync<SessionRow>('SELECT * FROM sessions WHERE id = ?', id);
+  async getSession(id: string): Promise<Session | null> {
+    const rows = await readAll();
+    const row = rows.find((r) => r.id === id);
     return row ? rowToSession(row) : null;
   }
 
-  /**
-   * Update the session state and optionally set the ended_at timestamp.
-   */
-  updateSessionState(id: string, state: SessionState, endedAt?: string): void {
-    const db = getDatabase();
-    const now = new Date().toISOString();
-
-    if (endedAt !== undefined || state === 'ended') {
-      db.runSync(
-        'UPDATE sessions SET state = ?, ended_at = ?, updated_at = ? WHERE id = ?',
-        state,
-        endedAt ?? now,
-        now,
-        id,
-      );
-    } else {
-      db.runSync(
-        'UPDATE sessions SET state = ?, updated_at = ? WHERE id = ?',
-        state,
-        now,
-        id,
-      );
+  async updateSessionState(id: string, state: SessionState, endedAt?: string): Promise<void> {
+    const rows = await readAll();
+    const row = rows.find((r) => r.id === id);
+    if (!row) return;
+    row.state = state;
+    if (endedAt !== undefined || state === SessionState.Ended) {
+      row.ended_at = endedAt ?? new Date().toISOString();
     }
+    await writeAll(rows);
   }
 
-  /**
-   * Get the currently active session, if any.
-   * An active session is one in 'monitoring' or 'paused' state.
-   */
-  getActiveSession(): Session | null {
-    const db = getDatabase();
-    const row = db.getFirstSync<SessionRow>(
-      "SELECT * FROM sessions WHERE state IN ('monitoring', 'paused') ORDER BY started_at DESC LIMIT 1",
+  async getActiveSession(): Promise<Session | null> {
+    const rows = await readAll();
+    const active = rows.find((r) =>
+      [SessionState.Monitoring, SessionState.Paused].includes(r.state as SessionState),
     );
-    return row ? rowToSession(row) : null;
+    return active ? rowToSession(active) : null;
   }
 
-  /**
-   * List sessions ordered by most recent first.
-   */
-  listSessions(limit = 20, offset = 0): Session[] {
-    const db = getDatabase();
-    const rows = db.getAllSync<SessionRow>(
-      'SELECT * FROM sessions ORDER BY started_at DESC LIMIT ? OFFSET ?',
-      limit,
-      offset,
-    );
-    return rows.map(rowToSession);
+  async listSessions(limit = 20, offset = 0): Promise<Session[]> {
+    const rows = await readAll();
+    return rows
+      .sort((a, b) => new Date(b.started_at).getTime() - new Date(a.started_at).getTime())
+      .slice(offset, offset + limit)
+      .map(rowToSession);
   }
 
-  /**
-   * Delete a session and its associated data.
-   */
-  deleteSession(id: string): void {
-    const db = getDatabase();
-    db.runSync('DELETE FROM sessions WHERE id = ?', id);
+  async deleteSession(id: string): Promise<void> {
+    const rows = await readAll();
+    await writeAll(rows.filter((r) => r.id !== id));
   }
 }

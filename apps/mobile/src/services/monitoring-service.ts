@@ -1,4 +1,3 @@
-import { CircularBuffer } from '../audio/CircularBuffer';
 import { SessionRepository } from '../db';
 import { useSessionStore } from '../stores/session-store';
 import { useAudioStore } from '../stores/audio-store';
@@ -15,11 +14,9 @@ import { requestMicrophonePermission } from '../utils/permissions';
 export class MonitoringService {
   private audioService: AudioService;
   private sessionRepo: SessionRepository;
-  private circularBuffer: CircularBuffer;
 
   constructor() {
-    this.circularBuffer = new CircularBuffer();
-    this.audioService = new AudioService(this.circularBuffer);
+    this.audioService = new AudioService();
     this.sessionRepo = new SessionRepository();
   }
 
@@ -44,7 +41,7 @@ export class MonitoringService {
 
     // 3. Persist session row
     const batteryLevel = 100; // TODO: integrate expo-battery
-    useSessionStore.getState().startMonitoring(dogId, batteryLevel);
+    await useSessionStore.getState().startMonitoring(dogId, batteryLevel);
 
     // 4. Sync audio store flag
     useAudioStore.getState().setMonitoring(true);
@@ -52,28 +49,24 @@ export class MonitoringService {
 
   async pauseSession(): Promise<void> {
     await this.audioService.pauseMonitoring();
-    useSessionStore.getState().pauseMonitoring();
+    await useSessionStore.getState().pauseMonitoring();
     useAudioStore.getState().setMonitoring(false);
   }
 
   async resumeSession(): Promise<void> {
     await this.audioService.resumeMonitoring();
-    useSessionStore.getState().resumeMonitoring();
+    await useSessionStore.getState().resumeMonitoring();
     useAudioStore.getState().setMonitoring(true);
   }
 
   async stopSession(): Promise<void> {
     await this.audioService.stopMonitoring();
     useAudioStore.getState().reset();
-    useSessionStore.getState().stopMonitoring();
+    await useSessionStore.getState().stopMonitoring();
     // TODO T-PM-03: trigger post-session computation + navigate to summary
   }
 
   // ── Getters ─────────────────────────────────────────────
-
-  getBuffer(): CircularBuffer {
-    return this.circularBuffer;
-  }
 
   get isActive(): boolean {
     return this.audioService.active;

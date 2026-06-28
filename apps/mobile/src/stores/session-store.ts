@@ -2,30 +2,19 @@ import type { Session, SessionState } from '@dwatcher/types';
 import { create } from 'zustand';
 
 import { SessionRepository } from '../db';
-import {
-  SessionAction,
-  transitionState,
-} from '../services/session-machine';
+import { SessionAction, transitionState } from '../services/session-machine';
 
 export interface SessionStore {
-  /** The current active session, or null if none. */
   currentSession: Session | null;
-  /** Current state of the session state machine. */
   sessionState: SessionState;
-  /** Elapsed seconds since the session started (monitoring time only). */
   elapsedSeconds: number;
-  /** Whether the store has been initialised from the database. */
   isInitialized: boolean;
 
-  // ── Lifecycle ──────────────────────────────────────────
-
-  /** Read the active session from SQLite. Call once on app mount. */
-  initialize: () => void;
-  startMonitoring: (dogId: string, batteryLevel: number) => void;
-  pauseMonitoring: () => void;
-  resumeMonitoring: () => void;
-  stopMonitoring: () => void;
-  /** Increment elapsedSeconds by 1. Called by a 1‑second interval. */
+  initialize: () => Promise<void>;
+  startMonitoring: (dogId: string, batteryLevel: number) => Promise<void>;
+  pauseMonitoring: () => Promise<void>;
+  resumeMonitoring: () => Promise<void>;
+  stopMonitoring: () => Promise<void>;
   tick: () => void;
   reset: () => void;
 }
@@ -38,10 +27,8 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
   elapsedSeconds: 0,
   isInitialized: false,
 
-  // ── Lifecycle ──────────────────────────────────────────
-
-  initialize() {
-    const active = repo.getActiveSession();
+  async initialize() {
+    const active = await repo.getActiveSession();
     if (active) {
       set({
         currentSession: active,
@@ -52,32 +39,32 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
     set({ isInitialized: true });
   },
 
-  startMonitoring(dogId: string, batteryLevel: number) {
+  async startMonitoring(dogId: string, batteryLevel: number) {
     const next = transitionState(get().sessionState, SessionAction.Start);
-    const session = repo.createSession(dogId, batteryLevel);
+    const session = await repo.createSession(dogId, batteryLevel);
     set({ currentSession: session, sessionState: next, elapsedSeconds: 0 });
   },
 
-  pauseMonitoring() {
+  async pauseMonitoring() {
     const { currentSession } = get();
     const next = transitionState(get().sessionState, SessionAction.Pause);
-    if (currentSession) repo.updateSessionState(currentSession.id, next);
+    if (currentSession) await repo.updateSessionState(currentSession.id, next);
     set({ sessionState: next });
   },
 
-  resumeMonitoring() {
+  async resumeMonitoring() {
     const { currentSession } = get();
     const next = transitionState(get().sessionState, SessionAction.Resume);
-    if (currentSession) repo.updateSessionState(currentSession.id, next);
+    if (currentSession) await repo.updateSessionState(currentSession.id, next);
     set({ sessionState: next });
   },
 
-  stopMonitoring() {
+  async stopMonitoring() {
     const { currentSession } = get();
     const next = transitionState(get().sessionState, SessionAction.Stop);
     const endedAt = new Date().toISOString();
     if (currentSession) {
-      repo.updateSessionState(currentSession.id, next, endedAt);
+      await repo.updateSessionState(currentSession.id, next, endedAt);
       set({
         currentSession: { ...currentSession, state: next, endedAt },
         sessionState: next,
@@ -94,11 +81,13 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
   },
 
   reset() {
-    set({ currentSession: null, sessionState: 'idle' as SessionState, elapsedSeconds: 0 });
+    set({
+      currentSession: null,
+      sessionState: 'idle' as SessionState,
+      elapsedSeconds: 0,
+    });
   },
 }));
-
-// ── Helpers ───────────────────────────────────────────────
 
 function computeElapsed(session: Session): number {
   if (!session.startedAt) return 0;
