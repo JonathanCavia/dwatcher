@@ -1,13 +1,8 @@
-import {
-  type AudioRecorder,
-  type RecorderState,
-  type RecordingOptions,
-} from 'expo-audio';
-import {
-  requestRecordingPermissionsAsync,
-  setAudioModeAsync,
-} from 'expo-audio';
-import { AudioModule } from 'expo-audio';
+import { AudioRecorder, RecordingNotificationManager } from 'react-native-audio-api';
+import type { OnAudioReadyEventType } from 'react-native-audio-api/lib/typescript/events/types';
+
+import { CircularBuffer } from '../audio/CircularBuffer';
+import { computeDbfs, computeRms } from '@dwatcher/audio';
 
 // ─── Types ────────────────────────────────────────────────
 
@@ -16,26 +11,27 @@ export interface AudioServiceCallbacks {
   onError?: (error: Error) => void;
 }
 
-// ─── Recording options ────────────────────────────────────
+// ─── PCM callback config ──────────────────────────────────
 
-const RECORDING_OPTIONS: RecordingOptions = {
-  isMeteringEnabled: true,
-  extension: '.wav',
+/** 100ms chunks at 16kHz mono → 1600 samples per callback. */
+const PCM_OPTIONS = {
   sampleRate: 16000,
-  numberOfChannels: 1,
-  bitRate: 256000,
-  android: { outputFormat: 'default', audioEncoder: 'default' },
-  ios: { outputFormat: 'lpcm', audioQuality: 0 },
+  bufferLength: 1600,
+  channelCount: 1,
 };
 
 // ─── Service ──────────────────────────────────────────────
 
 export class AudioService {
-  private recorder: AudioRecorder | null = null;
+  private recorder = new AudioRecorder();
+  private buffer: CircularBuffer;
   private isActive = false;
-  private pollInterval: ReturnType<typeof setInterval> | null = null;
   private callbacks: AudioServiceCallbacks = {};
-  private readonly pollMs = 100;
+  private onReadyCallback: ((event: OnAudioReadyEventType) => void) | null = null;
+
+  constructor(circularBuffer: CircularBuffer) {
+    this.buffer = circularBuffer;
+  }
 
   get active(): boolean {
     return this.isActive;
@@ -44,63 +40,48 @@ export class AudioService {
   async startMonitoring(callbacks: AudioServiceCallbacks = {}): Promise<void> {
     this.callbacks = callbacks;
 
-    // Permission
-    const { granted } = await requestRecordingPermissionsAsync();
-    if (!granted) throw new Error('Microphone permission required.');
+    // Foreground service notification
+    RecordingNotificationManager.show({
+      title: 'dwatcher is monitoring',
+      contentText: 'Your dog is being watched',
+    });
 
-    // Foreground service via audio mode
-    await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
+    // Register PCM callback
+    this.onReadyCallback = (event: OnAudioReadyEventType) => {
+      const pcm = event.buffer.getChannelData(0);
+      this.buffer.write(pcm);
+      const rms = computeRms(pcm);
+      const dbfs = computeDbfs(pcm);
+      callbacks.onVolumeUpdate?.(rms, dbfs);
+    };
 
-    // Create and start recorder
-    const recorder = new AudioModule.AudioRecorder(RECORDING_OPTIONS);
-    await recorder.prepareToRecordAsync(RECORDING_OPTIONS);
-    recorder.record();
-    this.recorder = recorder;
+    this.recorder.onAudioReady(PCM_OPTIONS, this.onReadyCallback);
+    this.recorder.start({});
     this.isActive = true;
-    this.startPolling();
   }
 
   async stopMonitoring(): Promise<void> {
-    this.stopPolling();
-    if (this.recorder) {
-      try { await this.recorder.stop(); } catch { /* ok */ }
-      this.recorder = null;
+    if (this.onReadyCallback) {
+      this.recorder.clearOnAudioReady();
+      this.onReadyCallback = null;
     }
+    this.recorder.stop();
+    RecordingNotificationManager.hide();
+    this.buffer.clear();
     this.isActive = false;
   }
 
-  async pauseMonitoring(): Promise<void> {
-    if (!this.isActive) return;
-    this.stopPolling();
-    this.recorder?.pause();
+  pauseMonitoring(): void {
+    this.recorder.pause();
     this.isActive = false;
   }
 
-  async resumeMonitoring(): Promise<void> {
-    if (this.isActive || !this.recorder) return;
-    this.recorder.record();
+  resumeMonitoring(): void {
+    this.recorder.resume();
     this.isActive = true;
-    this.startPolling();
   }
 
-  // ─── Private ──────────────────────────────────────────────
-
-  private startPolling(): void {
-    this.pollInterval = setInterval(() => {
-      const rec = this.recorder;
-      if (!rec) return;
-      const state: RecorderState = rec.getStatus();
-      if (!state.isRecording) return;
-      const db: number = state.metering ?? -60;
-      const dbfs = Math.max(-60, Number.isFinite(db) ? db : -60);
-      this.callbacks.onVolumeUpdate?.(Math.pow(10, dbfs / 20), dbfs);
-    }, this.pollMs);
-  }
-
-  private stopPolling(): void {
-    if (this.pollInterval) {
-      clearInterval(this.pollInterval);
-      this.pollInterval = null;
-    }
+  getCircularBuffer(): CircularBuffer {
+    return this.buffer;
   }
 }
