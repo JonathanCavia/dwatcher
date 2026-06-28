@@ -65,7 +65,8 @@ The following `.claude/rules/*.md` files apply to specific paths in the repo:
 | `docs/GENERAL-GUIDELINES.md` | Development conventions, command reference, coding standards  |
 | `docs/SETUP-REFERENCE.md`    | Prerequisites, environment setup, build instructions          |
 | `docs/TECH-STACK.md`         | Technology decisions with rationale and trade-offs            |
-| `docs/ROADMAP.md`            | Development milestones and planned features                   |
+| `docs/ROADMAP.md`            | **Source of truth** — current state, priorities, direction, deferred features |
+| `docs/roadmaps/`             | Structured roadmaps (technical + user-facing) with stages, tasks, and tests |
 | `docs/ML-PIPELINE.md`        | ML model details, training pipeline, and dataset info         |
 
 ## Workflow
@@ -77,6 +78,15 @@ This project follows **Specification-Driven Development (SDD)**:
 - Commit messages follow conventional commits: `type(scope): description`
   - Scopes: `mobile`, `backend`, `shared`, `docs`, `repo`
   - Types: `feat`, `fix`, `chore`, `refactor`, `test`, `docs`
+
+## Source of Truth
+
+**`docs/ROADMAP.md` is the authoritative source of truth for the current project state.** It defines what is built, in progress, next, and intentionally deferred. When any implementation differs from what ROADMAP.md says, update ROADMAP.md in the same commit. Code, other docs, and roadmaps must be consistent with ROADMAP.md.
+
+- Before starting work on a feature, check ROADMAP.md for current state and priorities.
+- Before marking work as complete, check if ROADMAP.md needs to be updated.
+- When in doubt about whether a feature is in scope, consult ROADMAP.md's "Intentionally Deferred" section.
+- The `docs/roadmaps/` directory contains detailed implementation stages referenced by ROADMAP.md.
 
 ## Important Constraints
 
